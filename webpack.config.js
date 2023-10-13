@@ -8,7 +8,7 @@ module.exports = {
 	devtool: 'inline-source-map',
 	plugins: [
 		new HtmlWebpackPlugin({
-			title: 'Escape game',
+			template: './index.html'
 		}),
 		new CopyPlugin({
 			patterns: [
