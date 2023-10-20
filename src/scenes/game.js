@@ -17,7 +17,7 @@ const CHAIR_TILES = [TOP_CHAIR_TILE, MIDDLE_CHAIR_TILE, BOTTOM_CHAIR_TILE];
 const SMALL_PENTAGRAM_TILE = 255;
 const SMALL_ACTIVE_PENTAGRAM_TILE = 234;
 
-const SECRET_TILE_X = 5;
+const SECRET_TILE_X = 6;
 const SECRET_TILE_Y = 3;
 const HOLE_IN_WALL_TILE = 249;
 
@@ -29,6 +29,7 @@ export default class GameScene extends Phaser.Scene {
 	chests = null;
 	tilemap = null;
 	comboboxes = null;
+	items = [];
 
 	constructor() {
 		super();
@@ -36,8 +37,9 @@ export default class GameScene extends Phaser.Scene {
 
 	preload() {
 		this.load.tilemapTiledJSON('tilemap', 'assets/json/escape-room-map.json');
-		this.load.image('cavern_ruins', 'assets/img/cavern_ruins.png');
-		this.load.image('brassy-frame', 'assets/img/brassy_frame.png');
+		this.load.image('tiles', 'assets/img/tiles.png');
+		this.load.image('frame', 'assets/img/frame.png');
+		this.load.spritesheet('items', 'assets/img/items.png', { frameWidth: 16, frameHeight: 16 });
 		this.load.spritesheet('ui', 'assets/img/ui.png', { frameWidth: 32, frameHeight: 13 });
 		this.load.spritesheet('chest', 'assets/img/chest.png', { frameWidth: 32, frameHeight: 32 });
 		this.load.spritesheet('door', 'assets/img/door.png', { frameWidth: 24, frameHeight: 32 });
@@ -46,12 +48,49 @@ export default class GameScene extends Phaser.Scene {
 
 	create() {
 		this.tilemap = this.createTilemap('tilemap');
-		const tileset = this.createTileset(this.tilemap, 'cavern_ruins', 'cavern_ruins');
+		const tileset = this.createTileset(this.tilemap, 'cavern_ruins', 'tiles');
 		const { objectsLayer, foregroundLayer } = this.createLayers(this.tilemap, tileset);
 		this.chests = this.createChests(objectsLayer);
 		this.door = this.createDoor(objectsLayer);
 		this.comboboxes = this.createComboboxes(objectsLayer);
 		this.dialogs = this.createDialogs(objectsLayer);
+		this.createHud();
+	}
+
+	createHud() {
+		this.add.text(920, 30, 'Items', { fontSize: '18px' });
+
+		this.items = [
+			{
+				name: 'book',
+				texture: 'items',
+				frame: 178
+			},
+			{
+				name: 'power ring',
+				texture: 'items',
+				frame: 13
+			},
+			{
+				name: 'key',
+				texture: 'items',
+				frame: 50
+			},
+			{
+				name: 'pick',
+				texture: 'items',
+				frame: 84
+			}
+		]
+
+		for(let i = 0; i < this.items.length; i++) {
+			const sprite = this.add.sprite(950, i * 50 + 80, this.items[i].texture, this.items[i].frame);
+			sprite.setScale(3);
+			sprite.on('pointerdown', () => {
+				sprite.selected = true;
+				console.log('selected');
+			});
+		}
 	}
 
 	createTilemap(tilemapKey) {
@@ -190,14 +229,14 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	showDialog(text) {
-		const dialog = this.add.nineslice(400, 250, 'brassy-frame', null, 300, 550);
-		const dialogText = this.add.text(400, 250, text, {
+		const dialog = this.add.nineslice(450, 350, 'frame', null, 300, 550);
+		const dialogText = this.add.text(450, 350, text, {
 			fontFamily: 'Verdana',
 			fontSize: '12px'
 		});
 		dialogText.setOrigin(0.5, 0.5);
 		dialogText.setWordWrapWidth(250);
-		const closeButton = this.add.sprite(535, 195, 'ui', 2);
+		const closeButton = this.add.sprite(585, 300, 'ui', 2);
 		closeButton.setInteractive();
 		closeButton.on('pointerdown', () => {
 			dialog.destroy();
@@ -232,56 +271,42 @@ export default class GameScene extends Phaser.Scene {
 			}
 
 			// move chair when clicked on it
-			if (CHAIR_TILES.includes(tile?.index)) {
+			if ((tile?.x === 23 && tile?.y === 4) || (tile?.x === 23 && tile?.y === 5) || (tile?.x === 23 && tile?.y === 6)) {
 				this.tilemap.putTileAt(TOP_CHAIR_TILE, 22, 4);
 				this.tilemap.putTileAt(MIDDLE_CHAIR_TILE, 22, 5);
 				this.tilemap.putTileAt(BOTTOM_CHAIR_TILE, 22, 6);
-				this.tilemap.removeTileAt(21, 4);
-				this.tilemap.removeTileAt(21, 5);
-				this.tilemap.removeTileAt(21, 6);
+				this.tilemap.removeTileAt(23, 4);
+				this.tilemap.removeTileAt(23, 5);
+				this.tilemap.removeTileAt(23, 6);
 				this.unscrambleDialogs(this.dialogs);
 				this.chests[0].locked = false;
 				this.door.locked = false;
 			}
 
 			// if tile if knight
-			if (KNIGHT_TILES.includes(tile?.index)) {
+			if ((tile?.x === 22 && tile?.y === 15) || (tile?.x === 22 && tile?.y === 16)) {
 				const hiddenDialog = this.getDialog(this.dialogs, 'hidden-dialog');
-				console.dir(hiddenDialog);
 				hiddenDialog.visible = true;
-				this.tilemap.putTileAt(SIGN_TILE, 22, 13);
-				this.tilemap.putTileAt(DESTROYED_KNIGHT_TILE, 22, 14);
+				this.tilemap.putTileAt(SIGN_TILE, 22, 15);
+				this.tilemap.putTileAt(DESTROYED_KNIGHT_TILE, 22, 16);
 			}
 
 			if (tile?.x === SECRET_TILE_X && tile?.y === SECRET_TILE_Y) {
 				this.tilemap.putTileAt(HOLE_IN_WALL_TILE, pointerTileX, pointerTileY);
 			}
 
-			if (tile?.index === TOP_PILLAR_TILE) {
-				this.tilemap.removeTileAt(pointerTileX, pointerTileY);
-			}
-
 			// if tile is gargoyle
-			if (GARGOYLE_TILES.includes(tile?.index)) {
-				if ([2, 3].includes(tile?.x)) {
-					this.tilemap.putTileAt(232, 1, 13);
-					this.tilemap.putTileAt(233, 2, 13);
-					this.tilemap.putTileAt(256, 1, 14);
-					this.tilemap.putTileAt(257, 2, 14);
-					this.tilemap.removeTileAt(3, 13);
-					this.tilemap.removeTileAt(3, 14);
-				} else {
-					this.tilemap.putTileAt(232, 8, 13);
-					this.tilemap.putTileAt(233, 9, 13);
-					this.tilemap.putTileAt(256, 8, 14);
-					this.tilemap.putTileAt(257, 9, 14);
-					this.tilemap.removeTileAt(7, 13);
-					this.tilemap.putTileAt(SMALL_PENTAGRAM_TILE, 7, 14);
-				}
+			if (GARGOYLE_TILES.includes(tile?.index) && (tile?.x === 8 || tile?.x === 9) && (tile?.y === 15 || tile?.y === 16)) {
+				this.tilemap.putTileAt(232, 9, 15);
+				this.tilemap.putTileAt(233, 10, 15);
+				this.tilemap.putTileAt(256, 9, 16);
+				this.tilemap.putTileAt(257, 10, 16);
+				this.tilemap.removeTileAt(8, 15);
+				this.tilemap.putTileAt(SMALL_PENTAGRAM_TILE, 8, 16);
 			}
 
 			if (tile?.index === SMALL_PENTAGRAM_TILE) {
-				this.tilemap.putTileAt(SMALL_ACTIVE_PENTAGRAM_TILE, 7, 14);
+				this.tilemap.putTileAt(SMALL_ACTIVE_PENTAGRAM_TILE, pointerTileX, pointerTileY);
 			}
 		}
 	}
