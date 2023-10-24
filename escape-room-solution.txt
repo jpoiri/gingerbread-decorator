@@ -1,0 +1,50 @@
+1. User solves the keyboard riddle and opens the middle chest 
+
+2. User picks up the book
+
+3. User selects the book reads the tombstone to understand.
+
+4. User push chair to expose the hidden sign
+
+4. User solves the second riddle and open the right safe
+
+5. User picks up the hammer
+
+6. User selects the hammer, destroys all windows and the coffin is destroyed 
+
+7. User picks up power ring
+
+8. User selects the power ring and push the gargoyle
+
+9. User hits a button and knight is destroyed
+
+10. Users reads the exposed sign
+
+11. User solves the third riddle and open the left safe
+
+12. User picks up the ice rod.
+
+13. User selects the ice rod and extinguish fire
+
+14. User picks the pickaxe
+
+15. User selects the pickaxe
+
+16. User destroys the wall
+
+17. User picks the key
+
+18. User selects the key and open chest
+
+19. User picks up shovel
+
+20. User selects shovel and dig skeleton
+
+21. User picks up master key
+
+22. User selects master key and leave 
+
+
+
+
+
