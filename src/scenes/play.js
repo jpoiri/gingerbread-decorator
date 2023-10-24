@@ -14,7 +14,7 @@ const SECRET_TILE_X = 6;
 const SECRET_TILE_Y = 3;
 const HOLE_IN_WALL_TILE = 249;
 
-export default class GameScene extends Phaser.Scene {
+export default class PlayScene extends Phaser.Scene {
 	signs = null;
 	door = null;
 	chests = null;
@@ -26,7 +26,7 @@ export default class GameScene extends Phaser.Scene {
 	dialogGroup = null;
 
 	constructor() {
-		super();
+		super('play');
 	}
 
 	preload() {
@@ -469,9 +469,9 @@ export default class GameScene extends Phaser.Scene {
 
 	update(time, delta) {
 		this.updateTime();
-
+		
 		if (this.isTimeElapsed) {
-
+			this.scene.start('winning');
 		}
 
 		if (this.selectedItem?.name === 'book') {
