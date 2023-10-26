@@ -32,7 +32,7 @@ export default class PlayScene extends Phaser.Scene {
 		this.load.spritesheet(LoaderKey.UI, 'assets/img/ui.png', { frameWidth: 32, frameHeight: 13 });
 		this.load.spritesheet(LoaderKey.CHEST, 'assets/img/chest.png', { frameWidth: 32, frameHeight: 32 });
 		this.load.spritesheet(LoaderKey.DOOR, 'assets/img/door.png', { frameWidth: 24, frameHeight: 32 });
-		this.load.spritesheet(LoaderKey.SAFE, 'assets/img/combolock.png', { frameWidth: 32, frameHeight: 40 });
+		this.load.spritesheet(LoaderKey.SAFE, 'assets/img/safe.png', { frameWidth: 32, frameHeight: 40 });
 	}
 
 	create() {
@@ -49,7 +49,7 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	createHud() {
-		this.add.text(920, 30, 'Items', { fontSize: '18px' });
+		const text = this.add.text(920, 20, 'Items', { fontSize: '20px', fontFamily: 'Verdana' });
 	}
 
 	updateHud() {
@@ -144,6 +144,8 @@ export default class PlayScene extends Phaser.Scene {
 				this.showDialog(door.getLockedMessage());
 			} else {
 				door.play(Animation.DOOR_OPEN);
+				door.setOpened(true);
+				this.showDialog('Mouahahah you thought the game was over? Try to find the real escape route now!');
 			}
 		});
 		this.createAnimation(Animation.DOOR_OPEN, LoaderKey.DOOR, [5, 0], 4);
@@ -379,7 +381,7 @@ export default class PlayScene extends Phaser.Scene {
 		this.tilemap.putTileAt(Tile.HOLE_IN_WALL, x, y);
 	}
 
-	isGargoyleTile(tile) {
+	isLeftGargoyleTile(tile) {
 		return (
 			(tile?.x === 3 && tile?.y === 15) ||
 			(tile?.x === 3 && tile?.y === 16) ||
@@ -388,13 +390,31 @@ export default class PlayScene extends Phaser.Scene {
 		);
 	}
 
-	moveGargoyle(tile) {
+	isRightGargoyleTile(tile) {
+		return (
+			(tile?.x === 8 && tile?.y === 15) ||
+			(tile?.x === 8 && tile?.y === 16) ||
+			(tile?.x === 9 && tile?.y === 15) ||
+			(tile?.x === 9 && tile?.y === 16)
+		);
+	}
+
+	moveLeftGargoyle(tile) {
 		this.tilemap.putTileAt(Tile.TOP_LEFT_GARGOYLE, 2, 15);
 		this.tilemap.putTileAt(Tile.TOP_RIGHT_GARGOYLE, 3, 15);
 		this.tilemap.putTileAt(Tile.BOTTOM_LEFT_GARGOYLE, 2, 16);
 		this.tilemap.putTileAt(Tile.BOTTOM_RIGHT_GARGOYLE, 3, 16);
 		this.tilemap.removeTileAt(4, 15);
 		this.tilemap.removeTileAt(4, 16);
+	}
+
+	moveRightGargoyle(tile) {
+		this.tilemap.putTileAt(Tile.TOP_LEFT_GARGOYLE, 9, 15);
+		this.tilemap.putTileAt(Tile.TOP_RIGHT_GARGOYLE, 10, 15);
+		this.tilemap.putTileAt(Tile.BOTTOM_LEFT_GARGOYLE, 9, 16);
+		this.tilemap.putTileAt(Tile.BOTTOM_RIGHT_GARGOYLE, 10, 16);
+		this.tilemap.removeTileAt(8, 15);
+		this.tilemap.putTileAt(Tile.STAIR, 8, 16);
 	}
 
 	isFireTile(tile) {
@@ -425,6 +445,10 @@ export default class PlayScene extends Phaser.Scene {
 
 	isSkeletonTile(tile) {
 		return tile?.x === 7 && tile?.y === 9;
+	}
+
+	isStairTile(tile) {
+		return tile?.index === Tile.STAIR;
 	}
 
 	digSkeleton() {
@@ -462,8 +486,9 @@ export default class PlayScene extends Phaser.Scene {
 		const minutesRemaining = Math.floor((this.timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
 		const secondsRemaining = Math.floor((this.timeRemaining % (1000 * 60)) / 1000);
 		if (this.timeRemaining) {
-			this.timeText = this.add.text(920, 700, `${hoursRemaining}:${minutesRemaining}:${secondsRemaining}`, {
-				fontSize: '12px'
+			this.timeText = this.add.text(915, 730, `${hoursRemaining}:${minutesRemaining}:${secondsRemaining}`, {
+				fontSize: '12px',
+				fontFamily: 'Verdana'
 			});
 		}
 	}
@@ -530,10 +555,15 @@ export default class PlayScene extends Phaser.Scene {
 			}
 
 			// if tile is gargoyle
-			if (this.isGargoyleTile(tile) && !this.gargoyleMoved && this.isItemSelected(Item.RING)) {
-				this.gargoyleMoved = true;
-				this.moveGargoyle();
+			if (this.isLeftGargoyleTile(tile) && !this.isLeftGargoyleMoved && this.isItemSelected(Item.RING)) {
+				this.isLeftGargoyleMoved = true;
+				this.moveLeftGargoyle();
 				this.spawnItem(145, 525, Item.POTION, LoaderKey.ITEMS, Frame.POTION, 'You got the magic solvent');
+			}
+
+			if (this.isRightGargoyleTile(tile) && !this.isRightGargoyleMoved && this.isItemSelected(Item.RING) && this.door.isOpened()) {
+				this.isRightGargoyleMoved = true;
+				this.moveRightGargoyle();
 			}
 
 			if (this.isFireTile(tile) && !this.fireExtinguished && this.isItemSelected(Item.ICE_ROD)) {
@@ -546,6 +576,10 @@ export default class PlayScene extends Phaser.Scene {
 				this.isDigged = true;
 				this.digSkeleton();
 				this.spawnItem(250, 300, Item.MASTER_KEY, LoaderKey.ITEMS, Frame.MASTER_KEY, 'You got the master key');
+			}
+
+			if (this.isStairTile(tile)) {
+				this.scene.start('win');
 			}
 		}
 	}

@@ -7,8 +7,9 @@ export default class WinningScene extends Phaser.Scene {
     }
 
     create() {
-        const text = this.add.text(512, 384, 'Congratulations, you have escaped? Thank you for playing!', {
-            fontSize: '22px'
+        const text = this.add.text(512, 384, 'Congratulations for escaping? Thank you for playing!', {
+            fontSize: '22px',
+            fontFamily: 'Verdana'
         });
         text.setOrigin(0.5, 0.5);
     }
