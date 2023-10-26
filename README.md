@@ -4,7 +4,7 @@ This is escape room I built for our Halloween party at work using Phaser.js
 
 Here's the link to the live version:
 
-https://jpoiri.github.io/escape-from-maax-dungeon/
+https://jpoiri.github.io/escape-from-the-dungeon/
 
 # Prerequisites
 
@@ -17,7 +17,7 @@ https://jpoiri.github.io/escape-from-maax-dungeon/
 1. Download repository by running the following command:
 
 ```
-git clone https://github.com/jpoiri/phaser-escape-room.git
+git clone https://github.com/jpoiri/escape-from-the-dungeon.git
 ```
 
 2. Download the project dependencies by running following command on project root:
