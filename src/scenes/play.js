@@ -104,7 +104,7 @@ export default class PlayScene extends Phaser.Scene {
 				safe.on('pointerdown', () => {
 					if (!safe.isOpened()) {
 						const answer = window.prompt(safe.getPromptMessage());
-						if (answer === safe.getCombination()) {
+						if (answer && answer.toLocaleUpperCase() === safe.getCombination().toLocaleUpperCase()) {
 							safe.play(Animation.SAFE_OPEN);
 							safe.setOpened(true);
 							this.spawnItem(
