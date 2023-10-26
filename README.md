@@ -2,6 +2,10 @@
 
 This is escape room I built for our Halloween party at work using Phaser.js
 
+Here's the link to the live version:
+
+https://jpoiri.github.io/escape-from-maax-dungeon/
+
 # Prerequisites
 
 * [Node.js](https://nodejs.org/en) is installed
