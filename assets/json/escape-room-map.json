@@ -165,16 +165,6 @@
                          "name":"spawnItemTexture",
                          "type":"string",
                          "value":"items"
-                        }, 
-                        {
-                         "name":"spawnItemX",
-                         "type":"int",
-                         "value":780
-                        }, 
-                        {
-                         "name":"spawnItemY",
-                         "type":"int",
-                         "value":320
                         }],
                  "rotation":0,
                  "type":"chest",
@@ -359,16 +349,6 @@
                          "name":"spawnItemTexture",
                          "type":"string",
                          "value":"items"
-                        }, 
-                        {
-                         "name":"spawnItemX",
-                         "type":"int",
-                         "value":515
-                        }, 
-                        {
-                         "name":"spawnItemY",
-                         "type":"int",
-                         "value":540
                         }],
                  "rotation":0,
                  "type":"safe",
@@ -412,16 +392,6 @@
                          "name":"spawnItemTexture",
                          "type":"string",
                          "value":"items"
-                        }, 
-                        {
-                         "name":"spawnItemX",
-                         "type":"int",
-                         "value":355
-                        }, 
-                        {
-                         "name":"spawnItemY",
-                         "type":"int",
-                         "value":545
                         }],
                  "rotation":0,
                  "type":"safe",

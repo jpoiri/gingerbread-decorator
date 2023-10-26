@@ -1,18 +1,13 @@
 import Phaser from 'phaser';
-
-const SIGN_TILE = 144;
-const CLOSE_WINDOW_TILE = 258;
-const OPEN_WINDOW_TILE = 235;
-const COFFIN_TILES = [71, 95];
-const DESTROYED_KNIGHT_TILE = 96;
-
-const TOP_CHAIR_TILE = 312;
-const MIDDLE_CHAIR_TILE = 336;
-const BOTTOM_CHAIR_TILE = 360;
+import Chest from '../entities/Chest';
+import Safe from '../entities/Safe';
+import Door from '../entities/Door';
+import Sign from '../entities/Sign';
+import ScrambledSign from '../entities/ScrambledSign';
+import { CustomProperty, TilemapLayer, EntityType, LoaderKey, Tile, Item, Animation, Frame } from '../constants';
 
 const SECRET_TILE_X = 6;
 const SECRET_TILE_Y = 3;
-const HOLE_IN_WALL_TILE = 249;
 
 export default class PlayScene extends Phaser.Scene {
 	signs = null;
@@ -30,19 +25,19 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	preload() {
-		this.load.tilemapTiledJSON('tilemap', 'assets/json/escape-room-map.json');
-		this.load.image('tiles', 'assets/img/tiles.png');
-		this.load.image('frame', 'assets/img/frame.png');
-		this.load.spritesheet('items', 'assets/img/items.png', { frameWidth: 16, frameHeight: 16 });
-		this.load.spritesheet('ui', 'assets/img/ui.png', { frameWidth: 32, frameHeight: 13 });
-		this.load.spritesheet('chest', 'assets/img/chest.png', { frameWidth: 32, frameHeight: 32 });
-		this.load.spritesheet('door', 'assets/img/door.png', { frameWidth: 24, frameHeight: 32 });
-		this.load.spritesheet('safe', 'assets/img/combolock.png', { frameWidth: 32, frameHeight: 40 });
+		this.load.tilemapTiledJSON(LoaderKey.TILEMAP, 'assets/json/escape-room-map.json');
+		this.load.image(LoaderKey.TILESET, 'assets/img/tiles.png');
+		this.load.image(LoaderKey.FRAME, 'assets/img/frame.png');
+		this.load.spritesheet(LoaderKey.ITEMS, 'assets/img/items.png', { frameWidth: 16, frameHeight: 16 });
+		this.load.spritesheet(LoaderKey.UI, 'assets/img/ui.png', { frameWidth: 32, frameHeight: 13 });
+		this.load.spritesheet(LoaderKey.CHEST, 'assets/img/chest.png', { frameWidth: 32, frameHeight: 32 });
+		this.load.spritesheet(LoaderKey.DOOR, 'assets/img/door.png', { frameWidth: 24, frameHeight: 32 });
+		this.load.spritesheet(LoaderKey.SAFE, 'assets/img/combolock.png', { frameWidth: 32, frameHeight: 40 });
 	}
 
 	create() {
-		this.tilemap = this.createTilemap('tilemap');
-		const tileset = this.createTileset(this.tilemap, 'cavern_ruins', 'tiles');
+		this.tilemap = this.createTilemap(LoaderKey.TILEMAP);
+		const tileset = this.createTileset(this.tilemap, 'cavern_ruins', LoaderKey.TILESET);
 		const { objectsLayer, foregroundLayer } = this.createLayers(this.tilemap, tileset);
 		this.chests = this.createChests(objectsLayer);
 		this.door = this.createDoor(objectsLayer);
@@ -82,44 +77,43 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	createLayers(tilemap, tileset) {
-		const backgroundLayer = tilemap.createLayer('background', tileset);
-		const foregroundLayer = tilemap.createLayer('foreground', tileset);
-		const objectsLayer = tilemap.getObjectLayer('objects');
+		const backgroundLayer = tilemap.createLayer(TilemapLayer.BACKGROUND, tileset);
+		const foregroundLayer = tilemap.createLayer(TilemapLayer.FOREGROUND, tileset);
+		const objectsLayer = tilemap.getObjectLayer(TilemapLayer.OBJECTS);
 		return { backgroundLayer, foregroundLayer, objectsLayer };
 	}
 
 	createSafes(objectsLayer) {
 		const safes = [];
 		objectsLayer.objects.forEach((spawnObject) => {
-			if (spawnObject.type === 'safe') {
-				const safe = this.add.sprite(spawnObject.x, spawnObject.y, 'safe', 12);
-				const combination = spawnObject.properties.find((property) => property.name === 'combination');
-				const promptMessage = spawnObject.properties.find((property) => property.name === 'promptMessage');
-				const spawnItem = spawnObject.properties.find((property) => property.name === 'spawnItem');
-				const spawnItemTexture = spawnObject.properties.find((property) => property.name === 'spawnItemTexture');
-				const spawnItemFrame = spawnObject.properties.find((property) => property.name === 'spawnItemFrame');
-				const spawnItemDescription = spawnObject.properties.find((property) => property.name === 'spawnItemDescription');
-				const spawnItemX = spawnObject.properties.find((property) => property.name === 'spawnItemX');
-				const spawnItemY = spawnObject.properties.find((property) => property.name === 'spawnItemY');
-
-				safe.setInteractive();
-				safe.name = spawnObject.name;
-				safe.combination = combination?.value;
-				safe.promptMessage = promptMessage?.value;
-				safe.opened = false;
+			if (spawnObject.type === EntityType.SAFE) {
+				const safe = new Safe(
+					this,
+					spawnObject.x,
+					spawnObject.y,
+					LoaderKey.SAFE,
+					12,
+					spawnObject.name,
+					this.getCustomProperty(spawnObject, CustomProperty.COMBINATION),
+					this.getCustomProperty(spawnObject, CustomProperty.PROMPT_MESSAGE),
+					this.getCustomProperty(spawnObject, CustomProperty.SPAWN_ITEM_NAME),
+					this.getCustomProperty(spawnObject, CustomProperty.SPAWN_ITEM_TEXTURE),
+					this.getCustomProperty(spawnObject, CustomProperty.SPAWN_ITEM_FRAME),
+					this.getCustomProperty(spawnObject, CustomProperty.SPAWN_ITEM_DESCRIPTION)
+				);
 				safe.on('pointerdown', () => {
-					if (!safe.opened) {
-						const answer = window.prompt(safe.promptMessage);
-						if (answer === safe.combination) {
-							safe.play('safe-open');
-							safe.opened = true;
+					if (!safe.isOpened()) {
+						const answer = window.prompt(safe.getPromptMessage());
+						if (answer === safe.getCombination()) {
+							safe.play(Animation.SAFE_OPEN);
+							safe.setOpened(true);
 							this.spawnItem(
-								spawnItemX?.value,
-								spawnItemY?.value,
-								spawnItem?.value,
-								spawnItemTexture?.value,
-								spawnItemFrame?.value,
-								spawnItemDescription?.value
+								safe.x,
+								safe.y + safe.height,
+								safe.getSpawnItemName(),
+								safe.getSpawnItemTexture(),
+								safe.getSpawnItemFrame(),
+								safe.getSpawnItemDescription()
 							);
 						}
 					}
@@ -127,107 +121,98 @@ export default class PlayScene extends Phaser.Scene {
 				safes.push(safe);
 			}
 		});
-		this.anims.create({
-			key: 'safe-open',
-			frames: this.anims.generateFrameNumbers('safe', { frames: [13] }),
-			frameRate: 4
-		});
+		this.createAnimation(Animation.SAFE_OPEN, LoaderKey.SAFE, [13], 4);
 		return safes;
 	}
 
 	createDoor(objectsLayer) {
-		const doorSpawnPoint = objectsLayer.objects.find((spawnObject) => {
-			return spawnObject.type === 'door';
+		const spawnObject = objectsLayer.objects.find((spawnObject) => {
+			return spawnObject.type === EntityType.DOOR;
 		});
-		const door = this.add.sprite(doorSpawnPoint.x, doorSpawnPoint.y, 'door', 10);
-		const locked = doorSpawnPoint.properties.find((property) => property.name === 'locked');
-		const lockedMessage = doorSpawnPoint.properties.find((property) => property.name === 'lockedMessage');
-		door.setInteractive();
-		door.setScale(2);
-		door.name = doorSpawnPoint.name;
-		door.locked = locked?.value;
-		door.lockedMessage = lockedMessage?.value;
+		const door = new Door(
+			this,
+			spawnObject.x,
+			spawnObject.y,
+			LoaderKey.DOOR,
+			10,
+			spawnObject.name,
+			this.getCustomProperty(spawnObject, CustomProperty.LOCKED),
+			this.getCustomProperty(spawnObject, CustomProperty.LOCKED_MESSAGE)
+		);
 		door.on('pointerdown', () => {
-			if (door.locked) {
-				this.showDialog(door.lockedMessage);
+			if (door.isLocked()) {
+				this.showDialog(door.getLockedMessage());
 			} else {
-				door.play('door-open');
+				door.play(Animation.DOOR_OPEN);
 			}
 		});
-		this.anims.create({
-			key: 'door-open',
-			frames: this.anims.generateFrameNumbers('door', { frames: [5, 0] }),
-			frameRate: 4
-		});
+		this.createAnimation(Animation.DOOR_OPEN, LoaderKey.DOOR, [5, 0], 4);
 		return door;
 	}
 
 	createChests(objectsLayer) {
 		const chests = [];
 		objectsLayer.objects.forEach((spawnObject) => {
-			if (spawnObject.type === 'chest') {
-				const chest = this.add.sprite(spawnObject.x, spawnObject.y, 'chest');
-				const locked = spawnObject.properties.find((property) => property.name === 'locked');
-				const lockedMessage = spawnObject.properties.find((property) => property.name === 'lockedMessage');
-				const spawnItem = spawnObject.properties.find((property) => property.name === 'spawnItem');
-				const spawnItemTexture = spawnObject.properties.find((property) => property.name === 'spawnItemTexture');
-				const spawnItemFrame = spawnObject.properties.find((property) => property.name === 'spawnItemFrame');
-				const spawnItemDescription = spawnObject.properties.find((property) => property.name === 'spawnItemDescription');
-				const spawnItemX = spawnObject.properties.find((property) => property.name === 'spawnItemX');
-				const spawnItemY = spawnObject.properties.find((property) => property.name === 'spawnItemY');
-				chest.name = spawnObject.name;
-				chest.locked = locked?.value;
-				chest.lockedMessage = lockedMessage?.value;
-				chest.setInteractive();
+			if (spawnObject.type === EntityType.CHEST) {
+				const chest = new Chest(
+					this,
+					spawnObject.x,
+					spawnObject.y,
+					LoaderKey.CHEST,
+					null,
+					spawnObject.name,
+					this.getCustomProperty(spawnObject, CustomProperty.LOCKED),
+					this.getCustomProperty(spawnObject, CustomProperty.LOCKED_MESSAGE),
+					this.getCustomProperty(spawnObject, CustomProperty.SPAWN_ITEM_NAME),
+					this.getCustomProperty(spawnObject, CustomProperty.SPAWN_ITEM_TEXTURE),
+					this.getCustomProperty(spawnObject, CustomProperty.SPAWN_ITEM_FRAME),
+					this.getCustomProperty(spawnObject, CustomProperty.SPAWN_ITEM_DESCRIPTION)
+				);
 				chest.on('pointerdown', () => {
-					if (chest.locked) {
+					if (chest.isLocked()) {
 						this.showDialog(chest.lockedMessage);
 					} else {
-						chest.play('chest-open');
-						this.spawnItem(
-							spawnItemX?.value,
-							spawnItemY?.value,
-							spawnItem?.value,
-							spawnItemTexture?.value,
-							spawnItemFrame?.value,
-							spawnItemDescription?.value
-						);
+						if (!chest.isOpened()) {
+							chest.play(Animation.CHEST_OPEN);
+							chest.setOpened(true);
+							this.spawnItem(
+								chest.x,
+								chest.y + chest.height + 5,
+								chest.getSpawnItemName(),
+								chest.getSpawnItemTexture(),
+								chest.getSpawnItemFrame(),
+								chest.getSpawnItemDescription()
+							);
+						}
 					}
 				});
 				chests.push(chest);
 			}
 		});
-		this.anims.create({
-			key: 'chest-open',
-			frames: this.anims.generateFrameNumbers('chest', { frames: [1] }),
-			frameRate: 8,
-			repeat: -1
-		});
+		this.createAnimation(Animation.CHEST_OPEN, LoaderKey.CHEST, [1], 8, -1);
 		return chests;
 	}
 
 	createScrambledSigns(objectsLayer) {
 		const signs = [];
 		objectsLayer.objects.forEach((spawnObject) => {
-			if (spawnObject.type === 'scrambled-sign') {
-				let sign = this.add.image(spawnObject.x, spawnObject.y);
-				const text = spawnObject.properties.find((property) => property.name === 'text');
-				const scrambled = spawnObject.properties.find((property) => property.name === 'scrambled');
-				const scrambledText = spawnObject.properties.find((property) => property.name === 'scrambledText');
-				const visible = spawnObject.properties.find((property) => property.name === 'visible');
-				sign.setOrigin(0, 0);
-				sign.setInteractive();
-				sign.name = spawnObject.name;
-				sign.text = text?.value;
-				sign.visible = visible?.value;
-				sign.scrambled = scrambled?.value;
-				sign.scrambledText = scrambledText?.value;
+			if (spawnObject.type === EntityType.SCRAMBLED_SIGN) {
+				const sign = new ScrambledSign(
+					this,
+					spawnObject.x,
+					spawnObject.y,
+					spawnObject.name,
+					this.getCustomProperty(spawnObject, CustomProperty.TEXT),
+					this.getCustomProperty(spawnObject, CustomProperty.VISIBLE),
+					this.getCustomProperty(spawnObject, CustomProperty.SCRAMBLED),
+					this.getCustomProperty(spawnObject, CustomProperty.SCRAMBLED_TEXT)
+				);
 				sign.on('pointerdown', () => {
-					if (sign.visible) {
-						if (sign.scrambled) {
-							this.showDialog(sign.scrambledText);
+					if (sign.isVisible()) {
+						if (sign.isScrambled()) {
+							this.showDialog(sign.getScrambledText());
 						} else {
-							this.showDialog(sign.text);
+							this.showDialog(sign.getText());
 						}
 					}
 				});
@@ -240,18 +225,18 @@ export default class PlayScene extends Phaser.Scene {
 	createSigns(objectsLayer) {
 		const signs = [];
 		objectsLayer.objects.forEach((spawnObject) => {
-			if (spawnObject.type === 'sign') {
-				let sign = this.add.image(spawnObject.x, spawnObject.y);
-				const text = spawnObject.properties.find((property) => property.name === 'text');
-				const visible = spawnObject.properties.find((property) => property.name === 'visible');
-				sign.setOrigin(0, 0);
-				sign.setInteractive();
-				sign.name = spawnObject.name;
-				sign.text = text?.value;
-				sign.visible = visible?.value;
+			if (spawnObject.type === EntityType.SIGN) {
+				const sign = new Sign(
+					this,
+					spawnObject.x,
+					spawnObject.y,
+					spawnObject.name,
+					this.getCustomProperty(spawnObject, CustomProperty.TEXT),
+					this.getCustomProperty(spawnObject, CustomProperty.VISIBLE)
+				);
 				sign.on('pointerdown', () => {
-					if (sign.visible) {
-						this.showDialog(sign.text);
+					if (sign.isVisible()) {
+						this.showDialog(sign.getText());
 					}
 				});
 				signs.push(sign);
@@ -261,7 +246,7 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	scrambleDialogs(scrambled) {
-		this.scrambledSigns.forEach((dialog) => (dialog.scrambled = scrambled));
+		this.scrambledSigns.forEach((dialog) => dialog.setScrambled(scrambled));
 	}
 
 	showDialog(text, itemTexture, itemFrame, closeCallback) {
@@ -269,7 +254,7 @@ export default class PlayScene extends Phaser.Scene {
 			this.dialogGroup.destroy(true, false);
 		}
 		this.dialogGroup = this.add.group();
-		const dialogFrame = this.add.nineslice(450, 350, 'frame', null, 300, 550);
+		const dialogFrame = this.add.nineslice(450, 350, LoaderKey.FRAME, null, 300, 550);
 		let textY = 350;
 		if (itemTexture) {
 			textY = 330;
@@ -284,7 +269,7 @@ export default class PlayScene extends Phaser.Scene {
 		});
 		dialogText.setOrigin(0.5, 0.5);
 		dialogText.setWordWrapWidth(250);
-		const closeButton = this.add.image(585, 300, 'ui', 2);
+		const closeButton = this.add.image(585, 300, LoaderKey.UI, 2);
 		closeButton.setInteractive();
 
 		this.dialogGroup.add(closeButton);
@@ -298,20 +283,37 @@ export default class PlayScene extends Phaser.Scene {
 		});
 	}
 
+	createAnimation(key, texture, frames, frameRate, repeat) {
+		this.anims.create({
+			key,
+			frames: this.anims.generateFrameNumbers(texture, { frames }),
+			frameRate,
+			repeat
+		});
+	}
+
+	getCustomProperty(spawnObject, name) {
+		let property = null;
+		if (spawnObject) {
+			property = spawnObject.properties.find((property) => property.name === name);
+		}
+		return property?.value;
+	}
+
 	getDialog(dialogs, name) {
 		return dialogs.find((dialog) => dialog.name == name);
 	}
 
 	isBreakableWindowTile(tile) {
-		return tile?.index === CLOSE_WINDOW_TILE;
+		return tile?.index === Tile.CLOSE_WINDOW;
 	}
 
 	breakWindow(x, y) {
-		this.updateTile(this.tilemap, OPEN_WINDOW_TILE, x, y);
+		this.tilemap.putTileAt(Tile.OPEN_WINDOW, x, y);
 	}
 
 	getBreakableWindowsTiles(tilemap) {
-		return tilemap.filterTiles((tile) => tile.index === CLOSE_WINDOW_TILE);
+		return tilemap.filterTiles((tile) => tile.index === Tile.CLOSE_WINDOW);
 	}
 
 	hasBreakableWindowsTiles() {
@@ -319,15 +321,11 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	getCoffinTiles(tilemap) {
-		return this.tilemap.filterTiles((tile) => COFFIN_TILES.includes(tile.index));
+		return this.tilemap.filterTiles((tile) => Tile.COFFIN.includes(tile.index));
 	}
 
 	destroyCoffin() {
 		this.tilemap.removeTile(this.getCoffinTiles(this.tilemap));
-	}
-
-	updateTile(tilemap, tileIndex, x, y) {
-		tilemap.putTileAt(tileIndex, x, y, false);
 	}
 
 	spawnItem(x, y, itemName, itemTexture, itemFrame, itemDescription) {
@@ -352,14 +350,14 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	moveChair() {
-		this.tilemap.putTileAt(TOP_CHAIR_TILE, 22, 4);
-		this.tilemap.putTileAt(MIDDLE_CHAIR_TILE, 22, 5);
-		this.tilemap.putTileAt(BOTTOM_CHAIR_TILE, 22, 6);
-		this.tilemap.putTileAt(SIGN_TILE, 23, 6);
+		this.tilemap.putTileAt(Tile.TOP_CHAIR, 22, 4);
+		this.tilemap.putTileAt(Tile.MIDDLE_CHAIR, 22, 5);
+		this.tilemap.putTileAt(Tile.BOTTOM_CHAIR, 22, 6);
+		this.tilemap.putTileAt(Tile.SIGN, 23, 6);
 		this.tilemap.removeTileAt(23, 4);
 		this.tilemap.removeTileAt(23, 5);
 		const sign = this.signs.find((sign) => sign.name === 'chair-sign');
-		sign.visible = true;
+		sign.setVisible(true);
 	}
 
 	isKnightTile(tile) {
@@ -368,9 +366,9 @@ export default class PlayScene extends Phaser.Scene {
 
 	destroyKnight() {
 		const sign = this.signs.find((sign) => sign.name === 'knight-sign');
-		sign.visible = true;
-		this.tilemap.putTileAt(SIGN_TILE, 22, 15);
-		this.tilemap.putTileAt(DESTROYED_KNIGHT_TILE, 22, 16);
+		sign.setVisible(true);
+		this.tilemap.putTileAt(Tile.SIGN, 22, 15);
+		this.tilemap.putTileAt(Tile.DESTROYED_KNIGHT, 22, 16);
 	}
 
 	isBreakableWallTile(tile) {
@@ -378,7 +376,7 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	breakWall(x, y) {
-		this.tilemap.putTileAt(HOLE_IN_WALL_TILE, x, y);
+		this.tilemap.putTileAt(Tile.HOLE_IN_WALL, x, y);
 	}
 
 	isGargoyleTile(tile) {
@@ -391,10 +389,10 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	moveGargoyle(tile) {
-		this.tilemap.putTileAt(232, 2, 15);
-		this.tilemap.putTileAt(233, 3, 15);
-		this.tilemap.putTileAt(256, 2, 16);
-		this.tilemap.putTileAt(257, 3, 16);
+		this.tilemap.putTileAt(Tile.TOP_LEFT_GARGOYLE, 2, 15);
+		this.tilemap.putTileAt(Tile.TOP_RIGHT_GARGOYLE, 3, 15);
+		this.tilemap.putTileAt(Tile.BOTTOM_LEFT_GARGOYLE, 2, 16);
+		this.tilemap.putTileAt(Tile.BOTTOM_RIGHT_GARGOYLE, 3, 16);
 		this.tilemap.removeTileAt(4, 15);
 		this.tilemap.removeTileAt(4, 16);
 	}
@@ -414,15 +412,15 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	extinguishFire() {
-		this.tilemap.putTileAt(10, 12, 18);
-		this.tilemap.putTileAt(11, 13, 18);
-		this.tilemap.putTileAt(12, 14, 18);
-		this.tilemap.putTileAt(34, 12, 19);
-		this.tilemap.putTileAt(35, 13, 19);
-		this.tilemap.putTileAt(36, 14, 19);
-		this.tilemap.putTileAt(58, 12, 20);
-		this.tilemap.putTileAt(59, 13, 20);
-		this.tilemap.putTileAt(60, 14, 20);
+		this.tilemap.putTileAt(Tile.TOP_LEFT_WATER, 12, 18);
+		this.tilemap.putTileAt(Tile.TOP_CENTER_WATER, 13, 18);
+		this.tilemap.putTileAt(Tile.TOP_RIGHT_WATER, 14, 18);
+		this.tilemap.putTileAt(Tile.MIDDLE_LEFT_WATER, 12, 19);
+		this.tilemap.putTileAt(Tile.MIDDLE_CENTER_WATER, 13, 19);
+		this.tilemap.putTileAt(Tile.MIDDLE_RIGHT_WATER, 14, 19);
+		this.tilemap.putTileAt(Tile.BOTTOM_LEFT_WATER, 12, 20);
+		this.tilemap.putTileAt(Tile.BOTTOM_CENTER_WATER, 13, 20);
+		this.tilemap.putTileAt(Tile.BOTTOM_RIGHT_WATER, 14, 20);
 	}
 
 	isSkeletonTile(tile) {
@@ -430,7 +428,11 @@ export default class PlayScene extends Phaser.Scene {
 	}
 
 	digSkeleton() {
-		this.tilemap.putTileAt(316, 7, 9);
+		this.tilemap.putTileAt(Tile.DIGGED_HOLE, 7, 9);
+	}
+
+	isItemSelected(name) {
+		return this.selectedItem?.name === name;
 	}
 
 	startTimer(numberOfHours) {
@@ -459,7 +461,6 @@ export default class PlayScene extends Phaser.Scene {
 		const hoursRemaining = Math.floor((this.timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 		const minutesRemaining = Math.floor((this.timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
 		const secondsRemaining = Math.floor((this.timeRemaining % (1000 * 60)) / 1000);
-
 		if (this.timeRemaining) {
 			this.timeText = this.add.text(920, 700, `${hoursRemaining}:${minutesRemaining}:${secondsRemaining}`, {
 				fontSize: '12px'
@@ -467,31 +468,31 @@ export default class PlayScene extends Phaser.Scene {
 		}
 	}
 
-	update(time, delta) {
+	update() {
 		this.updateTime();
-		
+
 		if (this.isTimeElapsed) {
-			this.scene.start('winning');
+			this.scene.start('gameover');
 		}
 
-		if (this.selectedItem?.name === 'book') {
+		if (this.isItemSelected(Item.BOOK)) {
 			this.scrambleDialogs(false);
 		} else {
 			this.scrambleDialogs(true);
 		}
 
-		if (this.selectedItem?.name == 'key') {
+		if (this.isItemSelected(Item.KEY)) {
 			const chest = this.chests.find((chest) => chest.name === 'chest');
-			chest.locked = false;
+			chest.unlock();
 		} else {
 			const chest = this.chests.find((chest) => chest.name === 'chest');
-			chest.locked = true;
+			chest.lock();
 		}
 
-		if (this.selectedItem?.name == 'master-key') {
-			this.door.locked = false;
+		if (this.isItemSelected(Item.MASTER_KEY)) {
+			this.door.unlock();
 		} else {
-			this.door.locked = true;
+			this.door.lock();
 		}
 
 		const worldPoint = this.input.activePointer.positionToCamera(this.cameras.main);
@@ -501,13 +502,13 @@ export default class PlayScene extends Phaser.Scene {
 		const pointerTileY = this.tilemap.worldToTileY(worldPoint.y);
 
 		if (this.input.manager.activePointer.isDown) {
-			const tile = this.tilemap.getTileAt(pointerTileX, pointerTileY, false, 'foreground');
+			const tile = this.tilemap.getTileAt(pointerTileX, pointerTileY, false, TilemapLayer.FOREGROUND);
 
-			if (this.isBreakableWindowTile(tile) && this.selectedItem?.name === 'hammer') {
+			if (this.isBreakableWindowTile(tile) && this.isItemSelected(Item.HAMMER)) {
 				this.breakWindow(pointerTileX, pointerTileY);
 				if (!this.hasBreakableWindowsTiles()) {
 					this.destroyCoffin();
-					this.spawnItem(530, 205, 'ring', 'items', 13, 'You got the power ring');
+					this.spawnItem(530, 205, Item.RING, LoaderKey.ITEMS, Frame.RING, 'You got the power ring');
 				}
 			}
 
@@ -517,32 +518,34 @@ export default class PlayScene extends Phaser.Scene {
 			}
 
 			// if tile if knight
-			if (this.isKnightTile(tile) && this.selectedItem?.name === 'potion') {
+			if (this.isKnightTile(tile) && !this.knightDestroyed && this.isItemSelected(Item.POTION)) {
+				this.knightDestroyed = true;
 				this.destroyKnight();
 			}
 
-			if (this.isBreakableWallTile(tile) && !this.wallBroken && this.selectedItem?.name === 'pickaxe') {
-				this.wallBroken = true;
+			if (this.isBreakableWallTile(tile) && !this.wallDestroyed && this.isItemSelected(Item.PICKAXE)) {
+				this.wallDestroyed = true;
 				this.breakWall(pointerTileX, pointerTileY);
-				this.spawnItem(205, 140, 'key', 'items', 50, 'You got the key');
+				this.spawnItem(205, 140, Item.KEY, LoaderKey.ITEMS, Frame.KEY, 'You got the key');
 			}
 
 			// if tile is gargoyle
-			if (this.isGargoyleTile(tile) && !this.gargoyleMoved && this.selectedItem?.name === 'ring') {
+			if (this.isGargoyleTile(tile) && !this.gargoyleMoved && this.isItemSelected(Item.RING)) {
 				this.gargoyleMoved = true;
 				this.moveGargoyle();
-				this.spawnItem(145, 525, 'potion', 'items', 61, 'You got the magic solvent');
+				this.spawnItem(145, 525, Item.POTION, LoaderKey.ITEMS, Frame.POTION, 'You got the magic solvent');
 			}
 
-			if (this.isFireTile(tile) && !this.fireExtinguish && this.selectedItem?.name === 'ice-rod') {
-				this.fireExtinguish = true;
+			if (this.isFireTile(tile) && !this.fireExtinguished && this.isItemSelected(Item.ICE_ROD)) {
+				this.fireExtinguished = true;
 				this.extinguishFire();
-				this.spawnItem(435, 620, 'pickaxe', 'items', 83, 'You got the pickaxe');
+				this.spawnItem(435, 620, Item.PICKAXE, LoaderKey.ITEMS, Frame.PICKAXE, 'You got the pickaxe');
 			}
-			if (this.isSkeletonTile(tile) && !this.isDigged && this.selectedItem?.name === 'shovel') {
+
+			if (this.isSkeletonTile(tile) && !this.isDigged && this.isItemSelected(Item.SHOVEL)) {
 				this.isDigged = true;
 				this.digSkeleton();
-				this.spawnItem(250, 300, 'master-key', 'items', 51, 'You got the master key');
+				this.spawnItem(250, 300, Item.MASTER_KEY, LoaderKey.ITEMS, Frame.MASTER_KEY, 'You got the master key');
 			}
 		}
 	}

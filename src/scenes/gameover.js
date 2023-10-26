@@ -8,7 +8,7 @@ export default class GameOverScene extends Phaser.Scene {
 
     create() {
         const text = this.add.text(512, 384, 'Game over', {
-            fontSize: '26px'
+            fontSize: '22px'
         });
         text.setOrigin(0.5, 0.5);
     }
