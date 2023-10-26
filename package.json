@@ -7,7 +7,8 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "webpack",
 		"watch": "webpack --watch",
-		"serve": "webpack serve --open"
+		"serve": "webpack serve --open",
+		"deploy": "gh-pages -d dist"
 	},
 	"author": "Justin Poirier",
 	"license": "ISC",
@@ -16,6 +17,7 @@
 	},
 	"devDependencies": {
 		"copy-webpack-plugin": "^11.0.0",
+		"gh-pages": "^6.0.0",
 		"html-webpack-plugin": "^5.5.3",
 		"webpack": "^5.88.2",
 		"webpack-cli": "^5.1.4",
