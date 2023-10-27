@@ -7,7 +7,7 @@ export default class SplashScene extends Phaser.Scene {
     }
 
     create() {
-        const text = this.add.text(512, 250, 'Escape from MAAX dungeon', {
+        const text = this.add.text(512, 250, 'Escape from the dungeon', {
             fontSize: '50px',
             fontFamily: 'Verdana',
             fill: '#000'
