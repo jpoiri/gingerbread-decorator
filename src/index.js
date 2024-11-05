@@ -1,8 +1,5 @@
 import Phaser from 'phaser';
-import PlayScene from './scenes/Play';
-import GameOverScene  from './scenes/GameOver';
-import WinScene from './scenes/Win';
-import SplashScene from './scenes/Splash';
+import GameScene from './scenes/Game';
 
 const config = {
 	type: Phaser.AUTO,
@@ -19,7 +16,7 @@ const config = {
 			gravity: { y: 200 }
 		}
 	},
-	scene: [SplashScene, PlayScene, GameOverScene, WinScene]
+	scene: [GameScene]
 };
 
 const game = new Phaser.Game(config);
