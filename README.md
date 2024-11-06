@@ -12,7 +12,7 @@ This is gingerbread painting game.
 1. Download repository by running the following command:
 
 ```
-git clone https://github.com/jpoiri/phaser-webpack-boilerplate.git
+git clone https://github.com/jpoiri/gingerbread-decorator.git
 ```
 
 2. Download the project dependencies by running following command on project root:
