@@ -1,6 +1,6 @@
 # About
 
-This is phaser webpack boilerplate 
+This is gingerbread painting game. 
 
 # Prerequisites
 

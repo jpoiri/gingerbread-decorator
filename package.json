@@ -1,7 +1,7 @@
 {
-	"name": "phaser-webpack-boilerplate",
+	"name": "gingerbread-decorator",
 	"version": "1.0.0",
-	"description": "Boilerplate for phaser and webpack",
+	"description": "Paint-like application to decorate gingerbread-man",
 	"private": true,
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
