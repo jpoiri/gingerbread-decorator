@@ -7,13 +7,15 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        // add preload logic
+        this.load.image('gingerbread-man', '../assets/img/gingerbread-man.png');
     }
 
     create() {
+        this.createColorToolbar();
+        this.gingerbreadMan = this.add.image(500, 400, 'gingerbread-man');
         this.graphics = this.add.graphics({
             lineStyle: {
-                width: 1,
+                width: 3,
                 color: 0xFFFFFF,
                 line: 1
             },
@@ -25,12 +27,43 @@ export default class GameScene extends Phaser.Scene {
         });
         this.width = 30;
         this.height = 30;
-        this.radius = 10;
-        this.shape = 'stroke-rectangle';
+        this.radius = 7;
+        this.color = 'xFFFFFF';
+        this.shape = 'circle';
+    }
+
+    createColorToolbar() {
+        const width = 50;
+        const height = 50;
+        const x = 50;
+        const y = 50;
+        const offset = 55;
+        const colors = [
+            0xFF0000, 
+            0xFF7878, 
+            0xFFFFFF,
+            0x74D680,
+            0xC6EFFF,
+            0x8CD4FF
+        ];
+        for (let i = 0, rows = 0, len=colors.length; i < len; i++) {
+            if (i > 0 && i % 2 === 0) {
+                rows++;
+            }
+            const colorRectangle = this.add.rectangle((i % 2 === 0) ? x : x + offset, offset * rows + y, width, height, colors[i]);
+            colorRectangle.setInteractive();
+            colorRectangle.on('pointerdown', () => {
+                if (this.selectedColorRectangle) {
+                    this.selectedColorRectangle.destroy();
+                }
+                this.selectedColorRectangle = this.add.rectangle(colorRectangle.x, colorRectangle.y, 50, 50);
+                this.selectedColorRectangle.setStrokeStyle(3, 0x000000);
+                this.graphics.fillStyle(colors[i]);
+            });
+        }
     }
 
     update() {
-
         const pointer = this.input.activePointer;
 
         if (pointer.isDown) {
@@ -45,11 +78,11 @@ export default class GameScene extends Phaser.Scene {
                 case 'circle':
                     this.graphics.fillCircle(pointer.x, pointer.y, this.radius);
                     break;
-                
+                case 'stroke-circle':
+                    this.graphics.strokeCircle(pointer.x, pointer.y, this.radius);
+                    break;
             }
         }
-
-        // add update logic
     }
 
 }
