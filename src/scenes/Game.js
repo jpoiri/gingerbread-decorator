@@ -7,7 +7,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('gingerbread-man', '../assets/img/gingerbread-man.png');
+        this.load.image('gingerbread-man', 'assets/img/gingerbread-man.png');
     }
 
     create() {
