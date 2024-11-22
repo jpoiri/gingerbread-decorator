@@ -1,9 +1,10 @@
-import Phaser from 'phaser';
+import Phaser, { Textures } from 'phaser';
 import GameScene from './scenes/Game';
 
 const config = {
 	type: Phaser.AUTO,
 	backgroundColor: '#FFFFFF',
+	debug: true,
 	scale: {
 		mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

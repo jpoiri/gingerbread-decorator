@@ -29,3 +29,7 @@ Run the following command on the project root:
 npm run serve
 ```
 
+# Copyrights
+
+<a href="https://www.flaticon.com/free-icons/eraser" title="eraser icons">Eraser icon created by Creatype - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/stamp" title="stamp icons">Stamp icon created by Freepik - Flaticon</a>

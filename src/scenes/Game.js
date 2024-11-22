@@ -6,32 +6,52 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	preload() {
-		this.load.image('gingerbread-man', 'assets/img/gingerbread-man.png');
+        this.load.image('gingerbread-man', 'assets/img/gingerbread-man.png');
+        this.load.image('eraser-icon', 'assets/img/eraser.png');
+        this.load.image('stamp-icon', 'assets/img/stamp.png')
 	}
 
 	create() {
-        this.width = 15;
-		this.height = 15;
-		this.radius = 7;
+        this.brushWidth = 15;
+		this.brushHeight = 15;
+		this.brushRadius = 7;
 		this.brushColor = 0xff0000;
-		this.brush = 'square';
+        this.brush = 'square';
+        this.drawnShapes = [];
+        this.stage = this.createStage();
+		this.stageImage = this.createStageImage();
 		this.createColorToolbar();
-		this.createBrushToolbar();
-		this.gingerbreadMan = this.add.image(500, 300, 'gingerbread-man');
-	}
+        this.createToolToolbar();
+        this.createButtons();
+    }
+    
+    createStage() {
+        const {width, height} = this.sys.game.canvas;
+        const toolbarSize = 160;
+        const stage = this.add.rectangle(160, 45, width - (toolbarSize * 2), height - 90);
+        stage.setOrigin(0, 0);
+        stage.setStrokeStyle(4, 0x000000);
+        return stage;
+    }
+
+    createStageImage(stage) {
+        return this.add.image(this.stage.x + (this.stage.width / 2), this.stage.y + (this.stage.height / 2), 'gingerbread-man');
+    }
 
 	createColorToolbar() {
 		const width = 50;
-		const height = 50;
-		const x = 50;
-		const y = 300;
+        const height = 50;
+        const stageTopX = this.stage.x + this.stage.width;
+		const x = stageTopX + 55;
+		const y = 90;
 		const offset = 55;
-        const colors = [0xff0000, 0xff7878, 0xffffff, 0x74d680, 0xc6efff, 0x8cd4ff];
-        this.add.text(45, 250, 'Colors', {
+        const colors = [0xff0000, 0xff7878,  0x146b3a, 0x74d680, 0x8cd4ff, 0xc6efff, 0xfac711, 0xffffff ];
+
+        this.add.text(stageTopX + 50, 40, 'Colors', {
             fontFamily: 'arial',
             fontSize: '20px',
             color: '#000000'            
-        });
+        })
 		for (let i = 0, rows = 0, len = colors.length; i < len; i++) {
 			if (i > 0 && i % 2 === 0) {
 				rows++;
@@ -53,23 +73,25 @@ export default class GameScene extends Phaser.Scene {
 		}
 	}
 
-	createBrushToolbar() {
-        this.add.text(40, 40, 'Brushes', {
+	createToolToolbar() {
+        this.add.text(50, 40, 'Tools', {
             fontFamily: 'arial',
             fontSize: '20px',
             color: '#000000'            
         });
-        this.createBrushOption('square', 50, 90, 50, 50);
-        this.createBrushOption('stroke-square', 105, 90, 50, 50);
-        this.createBrushOption('circle', 50, 145, 50, 50);
-        this.createBrushOption('stroke-circle', 105, 145, 50, 50);
-        this.createBrushOption('star', 50, 200, 50, 50);
-        this.createBrushOption('stroke-star', 105, 200, 50, 50);
+        this.createToolOption('square', 50, 90, 50, 50);
+        this.createToolOption('stroke-square', 105, 90, 50, 50);
+        this.createToolOption('circle', 50, 145, 50, 50);
+        this.createToolOption('stroke-circle', 105, 145, 50, 50);
+        this.createToolOption('star', 50, 200, 50, 50);
+        this.createToolOption('stroke-star', 105, 200, 50, 50);
+        this.createToolOption('eraser', 50, 255, 50, 50);
+        this.createToolOption('stamp', 105, 255, 50, 50);
     }
     
-    createBrushOption(brush, x, y, width, height) {
+    createToolOption(brush, x, y, width, height) {
         const brushRectangle = this.add.rectangle(x, y, width, height, 0xd3d3d3);
-		this.createBrushIcon(brush, x, y);
+		this.createToolIcon(brush, x, y);
         brushRectangle.setInteractive();
         brushRectangle.on('pointerdown', () => {
 			if (this.selectedBrushRectangle) {
@@ -85,60 +107,116 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    createBrushIcon(brush, x, y) {
-        let brushIcon = null;
+    createToolIcon(brush, x, y) {
+        let icon = null;
         switch(brush) {
             case 'square':
-                brushIcon = this.add.rectangle(x, y, 25, 25, 0x000000);
+                icon = this.add.rectangle(x, y, 25, 25, 0x000000);
+                icon.setStrokeStyle(3, 0x000000);
                 break;
             case 'stroke-square':
-                brushIcon = this.add.rectangle(x, y, 25, 25, 0xFFFFFF);
+                icon = this.add.rectangle(x, y, 25, 25, 0xFFFFFF);
+                icon.setStrokeStyle(3, 0x000000);
                 break;
             case 'circle':
-                brushIcon = this.add.circle(x, y, 15, 0x000000);
+                icon = this.add.circle(x, y, 15, 0x000000);
+                icon.setStrokeStyle(3, 0x000000);
                 break;
             case 'stroke-circle':
-                brushIcon = this.add.circle(x, y, 15, 0xFFFFFF);
+                icon = this.add.circle(x, y, 15, 0xFFFFFF);
+                icon.setStrokeStyle(3, 0x000000);
                 break
             case 'star':
-                brushIcon = this.add.star(x, y, 5, 9, 18, 0x000000);
+                icon = this.add.star(x, y, 5, 9, 18, 0x000000);
+                icon.setStrokeStyle(3, 0x000000);
                 break;
             case 'stroke-star': 
-                brushIcon = this.add.star(x, y, 5, 9, 18, 0xFFFFFF);
+                icon = this.add.star(x, y, 5, 9, 18, 0xFFFFFF);
+                icon.setStrokeStyle(3, 0x000000);
+                break;
+            case 'eraser':
+                icon = this.add.image(x, y, 'eraser-icon');
+                icon.setScale(0.07, 0.07);
+                break;
+            case 'stamp':
+                icon = this.add.image(x, y, 'stamp-icon');
+                icon.setScale(0.07, 0.07);
                 break;
         }
-        brushIcon.setStrokeStyle(3, 0x000000);
+    }
+
+    createButtons() {
+        const clearAllButton = this.add.rectangle(80, (this.stage.y + this.stage.height) - 25, 105, 50, 0xd3d3d3);
+
+        this.add.text(42, (this.stage.y + this.stage.height) - 35 , 'Clear All', {
+            fontFamily: 'arial',
+            fontSize: '20px',
+            color: '#000000'            
+        });
+
+        clearAllButton.setInteractive();
+        clearAllButton.on('pointerdown', () => {
+            this.clearAll();
+        });
+    }
+
+    clearAll() {
+        for (let i = 0, len = this.drawnShapes.length; i < len; i++) {
+            this.drawnShapes[i].destroy();             
+        }
+        this.drawnShapes = [];
+    }
+
+    canDraw(pointer) {
+        return pointer.isDown && this.stage.getBounds().contains(pointer.x - (this.brushWidth / 2), pointer.y - this.brushHeight);
     }
 
 	update() {
-		const pointer = this.input.activePointer;
-
-		if (pointer.isDown && pointer.x > 150) {
+        const pointer = this.input.activePointer;
+        let shape = null;
+        if (this.canDraw(pointer)) {
 			switch (this.brush) {
 				case 'square':
-                    this.add.rectangle(pointer.x - this.width / 2, pointer.y - this.height / 2, this.width, this.height, this.brushColor);
+                    shape = this.add.rectangle(pointer.x, pointer.y, this.brushWidth, this.brushHeight, this.brushColor);
+                    shape.setOrigin(0.5, 0.5);
 					break;
 				case 'stroke-square':
-                    const rectangle = this.add.rectangle(pointer.x - this.width / 2, pointer.y - this.height / 2, this.width, this.height);
-                    rectangle.setStrokeStyle(3,this.brushColor);
+                    shape = this.add.rectangle(pointer.x, pointer.y, this.brushWidth, this.brushHeight);
+                    shape.setOrigin(0.5, 0.5);
+                    shape.setStrokeStyle(3,this.brushColor);
 					break;
 				case 'circle':
-					this.add.circle(pointer.x, pointer.y, this.radius, this.brushColor);
+                    shape = this.add.circle(pointer.x, pointer.y, this.brushRadius, this.brushColor);
+                    shape.setOrigin(0.5, 0.5);
 					break;
 				case 'stroke-circle':
-                    const circle = this.add.circle(pointer.x, pointer.y, this.radius);
-                    circle.setStrokeStyle(3, this.brushColor);
+                    shape = this.add.circle(pointer.x, pointer.y, this.brushRadius);
+                    shape.setOrigin(0.5, 0.5);
+                    shape.setStrokeStyle(3, this.brushColor);
                     break;
                 case 'star': 
-                    this.add.star(pointer.x, pointer.y, 5, 5, 10, this.brushColor);
+                    shape = this.add.star(pointer.x, pointer.y, 5, 5, 10, this.brushColor);
+                    shape.setOrigin(0.5, 0.5);
                     break;
                 case 'stroke-star': 
-                    const star = this.add.star(pointer.x, pointer.y, 5, 5, 10);
-                    star.setStrokeStyle(3, this.brushColor);
+                    shape = this.add.star(pointer.x, pointer.y, 5, 5, 10);
+                    shape.setOrigin(0.5, 0.5);
+                    shape.setStrokeStyle(3, this.brushColor);
                     break;
-            
+                case 'eraser':
+                    for (let i = 0, len = this.drawnShapes.length; i < len; i++) {
+                        console.log(this.drawnShapes.length);
+                        if (this.drawnShapes[i].getBounds().contains(pointer.x, pointer.y)) {
+                            this.drawnShapes[i].destroy();
+                            console.log(this.drawnShapes.length);
+                        }
+                    }
+                    break;
 			}
         }
-    
+
+        if (shape) {
+            this.drawnShapes.push(shape);
+        }
 	}
 }
