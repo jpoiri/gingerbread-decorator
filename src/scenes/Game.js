@@ -146,9 +146,9 @@ export default class GameScene extends Phaser.Scene {
     }
 
     createButtons() {
-        const clearAllButton = this.add.rectangle(80, (this.stage.y + this.stage.height) - 25, 105, 50, 0xd3d3d3);
+        const clearAllButton = this.add.rectangle(80, (this.stage.y + this.stage.height) - 80, 105, 50, 0xd3d3d3);
 
-        this.add.text(42, (this.stage.y + this.stage.height) - 35 , 'Clear All', {
+        this.add.text(42, (this.stage.y + this.stage.height) - 90 , 'Clear All', {
             fontFamily: 'arial',
             fontSize: '20px',
             color: '#000000'            
@@ -157,6 +157,32 @@ export default class GameScene extends Phaser.Scene {
         clearAllButton.setInteractive();
         clearAllButton.on('pointerdown', () => {
             this.clearAll();
+        });
+
+        const exportButton = this.add.rectangle(80, (this.stage.y + this.stage.height) - 25, 105, 50, 0xd3d3d3);
+
+        this.add.text(50, (this.stage.y + this.stage.height) - 35 , 'Export', {
+            fontFamily: 'arial',
+            fontSize: '20px',
+            color: '#000000'            
+        });
+
+        exportButton.setInteractive();
+        exportButton.on('pointerdown', () => {
+            let canvas = document.querySelector('canvas');
+            const saveCanvas = document.createElement('canvas');
+            saveCanvas.width = canvas.width;
+            saveCanvas.height = canvas.height;
+
+            const ctx = saveCanvas.getContext('2d');
+            ctx.drawImage(canvas, 165, 50, 700, 650, 0, 0, 700, 650);
+
+            let dataURL = saveCanvas.toDataURL('image/png');
+
+            let downloadHelper = document.createElement('a');
+            downloadHelper.setAttribute('download', 'download.png');
+            downloadHelper.setAttribute('href', dataURL);
+            downloadHelper.click();
         });
     }
 

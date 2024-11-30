@@ -2,7 +2,7 @@ import Phaser, { Textures } from 'phaser';
 import GameScene from './scenes/Game';
 
 const config = {
-	type: Phaser.AUTO,
+	type: Phaser.CANVAS,
 	backgroundColor: '#FFFFFF',
 	debug: true,
 	scale: {
