@@ -1,5 +1,9 @@
 import Phaser from 'phaser';
 
+const FONT_FAMILY = 'arial';
+const FONT_SIZE = '20px';
+
+
 export default class GameScene extends Phaser.Scene {
 	constructor() {
 		super('game');
@@ -8,7 +12,13 @@ export default class GameScene extends Phaser.Scene {
 	preload() {
         this.load.image('gingerbread-man', 'assets/img/gingerbread-man.png');
         this.load.image('eraser-icon', 'assets/img/eraser.png');
-        this.load.image('stamp-icon', 'assets/img/stamp.png')
+        this.load.image('stamp-icon', 'assets/img/stamp.png');
+        this.load.image('candy-cane', 'assets/img/candy-cane.png');
+        this.load.image('gummy-bear', 'assets/img/gummy-bear.png');
+        this.load.image('sweets', 'assets/img/sweets.png');
+        this.load.image('mint', 'assets/img/mint.png');
+        this.load.image('candy', 'assets/img/candy.png');
+        this.load.image('chocolate', 'assets/img/chocolate.png');
 	}
 
 	create() {
@@ -16,11 +26,15 @@ export default class GameScene extends Phaser.Scene {
 		this.brushHeight = 15;
 		this.brushRadius = 7;
 		this.brushColor = 0xff0000;
-        this.brush = 'square';
+        this.brush = 'circle';
+        this.stamp = null;
+        this.stampSizeMultiplier = 1;
         this.drawnShapes = [];
         this.stage = this.createStage();
 		this.stageImage = this.createStageImage();
-		this.createColorToolbar();
+        this.createColorToolbar();
+        this.createStampToolbar();
+        this.createStampSizeToolbar();
         this.createToolToolbar();
         this.createButtons();
     }
@@ -41,17 +55,16 @@ export default class GameScene extends Phaser.Scene {
 	createColorToolbar() {
 		const width = 50;
         const height = 50;
-        const stageTopX = this.stage.x + this.stage.width;
-		const x = stageTopX + 55;
-		const y = 90;
+		const x = 50;
+		const y = 350;
 		const offset = 55;
         const colors = [0xff0000, 0xff7878,  0x146b3a, 0x74d680, 0x8cd4ff, 0xc6efff, 0xfac711, 0xffffff ];
 
-        this.add.text(stageTopX + 50, 40, 'Colors', {
-            fontFamily: 'arial',
-            fontSize: '20px',
+        this.add.text(50, 300, 'Colors', {
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE,
             color: '#000000'            
-        })
+        });
 		for (let i = 0, rows = 0, len = colors.length; i < len; i++) {
 			if (i > 0 && i % 2 === 0) {
 				rows++;
@@ -71,18 +84,150 @@ export default class GameScene extends Phaser.Scene {
 				this.selectedColorRectangle.setStrokeStyle(3, 0x000000);
             }
 		}
-	}
+    }
+    
+    createStampToolbar() {
+        const width = 50;
+        const height = 50;
+		const x = 919;
+		const y = 90;
+		const offset = 55;
+        const stamps = [
+            {
+                imageKey: 'candy-cane',
+                scale: 0.08
+            }, 
+            {
+                imageKey: 'gummy-bear',
+                scale: 0.08
+            }, 
+            {
+                imageKey: 'sweets',
+                scale: 0.08
+            },
+            {
+                imageKey: 'mint',
+                scale: 0.08
+            },
+            {
+                imageKey: 'candy',
+                scale: 0.08
+            },
+            {
+                imageKey: 'chocolate',
+                scale: 0.08
+            },
+            {
+                imageKey: 'hat',
+                scale: 0.05
+            },
+            {
+                imageKey: 'lolipop1',
+                scale: 0.06
+            },
+            {
+                imageKey: 'lolipop2',
+                scale: 0.06
+            },
+            {
+                imageKey: 'ribbon',
+                scale: 0.08
+            },
+            {
+                imageKey: 'ring-tree',
+                scale: 0.05
+            },
+            {
+                imageKey: 'sleigh-bells',
+                scale: 0.065
+            },
+            {
+                imageKey: 'socks',
+                scale: 0.08
+            },
+            {
+                imageKey: 'star',
+                scale: 0.08
+            },
+        ];
+
+        this.add.text(914, 40, 'Stamps', {
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE,
+            color: '#000000'            
+        });
+
+        for (let i = 0, rows = 0, len = stamps.length; i < len; i++) {
+			if (i > 0 && i % 2 === 0) {
+				rows++;
+            }
+            const stampRectangle = this.add.rectangle(i % 2 === 0 ? x : x + offset, offset * rows + y, width, height, 0xd3d3d3);
+
+            const stampImage = this.add.image(stampRectangle.x, stampRectangle.y, stamps[i].imageKey);
+            stampImage.setScale(stamps[i].scale);
+
+			stampRectangle.setInteractive();
+			stampRectangle.on('pointerdown', () => {
+				if (this.selectedStampRectangle) {
+					this.selectedStampRectangle.destroy();
+				}
+				this.selectedStampRectangle = this.add.rectangle(stampRectangle.x, stampRectangle.y, 50, 50);
+				this.selectedStampRectangle.setStrokeStyle(3, 0x000000);
+                this.selectedStamp = stamps[i];
+            });
+            if (this.selectedStamp === stamps[i]) {
+				this.selectedStampRectangle = this.add.rectangle(stampRectangle.x, stampRectangle.y, 50, 50);
+				this.selectedStampRectangle.setStrokeStyle(3, 0x000000);
+            }
+		}
+    }
+
+    createStampSizeToolbar() {
+        this.add.text(890, 485, 'Stamp sizes', {
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE,
+            color: '#000000'    
+        });
+
+        this.createStampSizeOption(945, 535, 'Small', 920, 525, 0.5);
+        this.createStampSizeOption(945, 590, 'Normal', 913, 580, 1);
+        this.createStampSizeOption(945, 645, 'Large', 920, 635, 2);
+        this.createStampSizeOption(945, 700, 'X-Large', 910, 687, 3);
+    }
+
+    createStampSizeOption(x, y, text, textX, textY, multiplier) {
+        const rectangle = this.add.rectangle(x, y, 105, 50, 0xd3d3d3);
+
+        this.add.text(textX, textY, text, {
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE,
+            color: '#000000'
+        });
+        rectangle.setInteractive();
+        rectangle.on('pointerdown', () => {
+            if (this.selectedStampSizeRectangle) {
+                this.selectedStampSizeRectangle.destroy();
+            }
+            this.selectedStampSizeRectangle = this.add.rectangle(rectangle.x, rectangle.y, 105, 50);
+            this.selectedStampSizeRectangle.setStrokeStyle(3, 0x000000);
+            this.stampSizeMultiplier =  multiplier;
+        });
+        if (this.stampSizeMultiplier === multiplier) {
+            this.selectedStampSizeRectangle = this.add.rectangle(rectangle.x, rectangle.y, 105, 50);
+            this.selectedStampSizeRectangle.setStrokeStyle(3, 0x000000);
+        }
+    }
 
 	createToolToolbar() {
         this.add.text(50, 40, 'Tools', {
-            fontFamily: 'arial',
-            fontSize: '20px',
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE,
             color: '#000000'            
         });
-        this.createToolOption('square', 50, 90, 50, 50);
-        this.createToolOption('stroke-square', 105, 90, 50, 50);
-        this.createToolOption('circle', 50, 145, 50, 50);
-        this.createToolOption('stroke-circle', 105, 145, 50, 50);
+        this.createToolOption('circle', 50, 90, 50, 50);
+        this.createToolOption('stroke-circle', 105, 90, 50, 50);
+        this.createToolOption('square', 50, 145, 50, 50);
+        this.createToolOption('stroke-square', 105, 145, 50, 50);
         this.createToolOption('star', 50, 200, 50, 50);
         this.createToolOption('stroke-star', 105, 200, 50, 50);
         this.createToolOption('eraser', 50, 255, 50, 50);
@@ -145,12 +290,13 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+
     createButtons() {
         const clearAllButton = this.add.rectangle(80, (this.stage.y + this.stage.height) - 80, 105, 50, 0xd3d3d3);
 
         this.add.text(42, (this.stage.y + this.stage.height) - 90 , 'Clear All', {
-            fontFamily: 'arial',
-            fontSize: '20px',
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE,
             color: '#000000'            
         });
 
@@ -162,8 +308,8 @@ export default class GameScene extends Phaser.Scene {
         const exportButton = this.add.rectangle(80, (this.stage.y + this.stage.height) - 25, 105, 50, 0xd3d3d3);
 
         this.add.text(50, (this.stage.y + this.stage.height) - 35 , 'Export', {
-            fontFamily: 'arial',
-            fontSize: '20px',
+            fontFamily: FONT_FAMILY,
+            fontSize: FONT_SIZE,
             color: '#000000'            
         });
 
@@ -171,11 +317,11 @@ export default class GameScene extends Phaser.Scene {
         exportButton.on('pointerdown', () => {
             let canvas = document.querySelector('canvas');
             const saveCanvas = document.createElement('canvas');
-            saveCanvas.width = canvas.width;
-            saveCanvas.height = canvas.height;
+            saveCanvas.width = 700;
+            saveCanvas.height = 650;
 
             const ctx = saveCanvas.getContext('2d');
-            ctx.drawImage(canvas, 165, 50, 700, 650, 0, 0, 700, 650);
+            ctx.drawImage(canvas, 165, 50, 690, 650, 0, 0, 700, 650);
 
             let dataURL = saveCanvas.toDataURL('image/png');
 
@@ -229,12 +375,18 @@ export default class GameScene extends Phaser.Scene {
                     shape.setOrigin(0.5, 0.5);
                     shape.setStrokeStyle(3, this.brushColor);
                     break;
+                case 'stamp':
+                    if (this.selectedStamp) {
+                        shape = this.add.image(pointer.x, pointer.y, this.selectedStamp.imageKey);
+                        shape.setOrigin(0.5, 0.5);
+                        const scale = this.selectedStamp.scale * this.stampSizeMultiplier
+                        shape.setScale(scale);
+                    }
+                    break;
                 case 'eraser':
                     for (let i = 0, len = this.drawnShapes.length; i < len; i++) {
-                        console.log(this.drawnShapes.length);
                         if (this.drawnShapes[i].getBounds().contains(pointer.x, pointer.y)) {
                             this.drawnShapes[i].destroy();
-                            console.log(this.drawnShapes.length);
                         }
                     }
                     break;
