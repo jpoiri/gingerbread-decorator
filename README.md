@@ -33,9 +33,7 @@ npm run serve
 
 <a href="https://www.flaticon.com/free-icons/eraser" title="eraser icons">Eraser icon created by Creatype - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/stamp" title="stamp icons">Stamp icon created by Freepik - Flaticon</a>
-
 <a href="https://www.flaticon.com/free-icons/gingerbread-house" title="gingerbread house icons">Gingerbread house icons created by Freepik - Flaticon</a>
-
 <a href="https://www.flaticon.com/free-icons/gingerbread-man" title="gingerbread-man icons">Gingerbread-man icons created by Good Ware - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/christmas" title="christmas icons">Christmas icons created by Freepik - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/gummy-bear" title="gummy bear icons">Gummy bear icons created by Freepik - Flaticon</a>
@@ -44,3 +42,15 @@ npm run serve
 <a href="https://www.flaticon.com/free-icons/mint" title="mint icons">Mint icons created by Freepik - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/food-and-restaurant" title="food and restaurant icons">Food and restaurant icons created by Aranagraphics - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/chocolate" title="chocolate icons">Chocolate icons created by Yudhi Restu - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/mint" title="mint icons">Mint icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/peppermint" title="peppermint icons">Peppermint icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/swirl" title="swirl icons">Swirl icons created by Smashicons - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/gum" title="gum icons">Gum icons created by Smashicons - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/candy" title="candy icons">Candy icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/truffle" title="truffle icons">Truffle icons created by Smashicons - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/sugar" title="sugar icons">Sugar icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/sprinkles" title="sprinkles icons">Sprinkles icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/gummy" title="gummy icons">Gummy icons created by Umeicon - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/food-and-restaurant" title="food and restaurant icons">Food and restaurant icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/2" title="2 icons">2 icons created by Nsit - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/lollipop" title="lollipop icons">Lollipop icons created by Freepik - Flaticon</a>
