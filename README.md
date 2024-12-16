@@ -54,3 +54,13 @@ npm run serve
 <a href="https://www.flaticon.com/free-icons/food-and-restaurant" title="food and restaurant icons">Food and restaurant icons created by Freepik - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/2" title="2 icons">2 icons created by Nsit - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/lollipop" title="lollipop icons">Lollipop icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/gummy-bear" title="gummy bear icons">Gummy bear icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/gum" title="gum icons">Gum icons created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/gingerbread-house" title="gingerbread house icons">Gingerbread house icons created by Aranagraphics - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/gingerbread-house" title="gingerbread house icons">Gingerbread house icons created by Freepik - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/gingerbread-house" title="gingerbread house icons">Gingerbread house icons created by VeronicaNerissa - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/gingerbread-house" title="gingerbread house icons">Gingerbread house icons created by Smashicons - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/gingerbread-house" title="gingerbread house icons">Gingerbread house icons created by Aranagraphics - Flaticon</a>

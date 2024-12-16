@@ -32,7 +32,22 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	preload() {
-		this.load.image('house', 'assets/img/house.png');
+		// get random gingerbread house to load.
+		let houseNumber = Math.floor(Math.random() * 6) + 1;
+
+		console.log(houseNumber);
+
+		const previousHouseNumber = localStorage.getItem('houseNumber');
+
+		console.log(previousHouseNumber);
+
+		while(houseNumber === parseInt(previousHouseNumber, 10)) {
+			houseNumber = Math.floor(Math.random() * 6) + 1;
+			console.log(houseNumber);
+		}
+		localStorage.setItem('houseNumber', houseNumber);
+
+		this.load.image('house', `assets/img/house${houseNumber}.png`);
 		this.load.image('eraser-icon', 'assets/img/eraser.png');
 		this.load.image('stamp-icon', 'assets/img/stamp.png');
 		this.load.image('candy-cane', 'assets/img/candy-cane.png');
@@ -48,7 +63,7 @@ export default class GameScene extends Phaser.Scene {
 		this.load.image('jelly-beans', 'assets/img/jelly-beans.png');
 		this.load.image('sprinkles', 'assets/img/sprinkles.png');
 		this.load.image('lollipop', 'assets/img/lollipop.png');
-		this.load.image('food', 'assets/img/food.png');
+		this.load.image('gingerbread-man', 'assets/img/gingerbread-man.png');
 	}
 
 	create() {
@@ -58,7 +73,7 @@ export default class GameScene extends Phaser.Scene {
 		this.stampSizeMultiplier = 1;
 		this.drawnShapes = [];
 		this.stage = this.createStage();
-		this.stageImage = this.createStageImage();
+		this.createStageImage();
 		this.createColorToolbar();
 		this.createStampToolbar();
 		this.createStampSizeToolbar();
@@ -75,7 +90,7 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	createStageImage(stage) {
-		return this.add.image(this.stage.x + this.stage.width / 2, this.stage.y + this.stage.height / 2, 'house');
+		this.add.image(this.stage.x + this.stage.width / 2, this.stage.y + this.stage.height / 2, 'house');
 	}
 
 	createColorToolbar() {
@@ -84,7 +99,7 @@ export default class GameScene extends Phaser.Scene {
 		const x = 50;
 		const y = 350;
 		const offset = 55;
-		const colors = [0xff0000, 0xff7878, 0x146b3a, 0x74d680, 0x8cd4ff, 0xc6efff, 0xfac711, 0xeef6f2, 0x533225, 0xca936d];
+		const colors = [0xff0000, 0xff7878, 0x146b3a, 0x74d680, 0x8cd4ff, 0xc6efff, 0xfac711, 0xeef6f2];
 
 		this.add.text(50, 300, 'Colors', {
 			fontFamily: FONT_FAMILY,
@@ -132,7 +147,7 @@ export default class GameScene extends Phaser.Scene {
 			'jelly-beans',
 			'sprinkles',
 			'lollipop',
-			'food'
+			'gingerbread-man'
 		];
 
 		this.add.text(914, 40, 'Stamps', {
@@ -281,6 +296,20 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	createButtons() {
+
+		const changeHouse = this.add.rectangle(80, this.stage.y + this.stage.height - 135, 105, 50, BUTTON_BACKGROUND_COLOR);
+
+		this.add.text(60, this.stage.y + this.stage.height - 145, 'New', {
+			fontFamily: FONT_FAMILY,
+			fontSize: FONT_SIZE,
+			color: TEXT_COLOR
+		});
+
+		changeHouse.setInteractive();
+		changeHouse.on('pointerdown', () => {
+			location.reload();
+		})
+
 		const clearAllButton = this.add.rectangle(80, this.stage.y + this.stage.height - 80, 105, 50, BUTTON_BACKGROUND_COLOR);
 
 		this.add.text(42, this.stage.y + this.stage.height - 90, 'Clear All', {
@@ -310,7 +339,7 @@ export default class GameScene extends Phaser.Scene {
 			saveCanvas.height = 650;
 
 			const ctx = saveCanvas.getContext('2d');
-			ctx.drawImage(canvas, 165, 50, 690, 650, 0, 0, 700, 650);
+			ctx.drawImage(canvas, 165, 50, 700, 650, 0, 0, 700, 650);
 
 			let dataURL = saveCanvas.toDataURL('image/png');
 
