@@ -339,7 +339,7 @@ export default class GameScene extends Phaser.Scene {
 			saveCanvas.height = 650;
 
 			const ctx = saveCanvas.getContext('2d');
-			ctx.drawImage(canvas, 165, 50, 700, 650, 0, 0, 700, 650);
+			ctx.drawImage(canvas, 165, 50, 695, 650, 0, 0, 695, 650);
 
 			let dataURL = saveCanvas.toDataURL('image/png');
 
