@@ -1,10 +1,9 @@
 import Phaser from 'phaser';
+import { Color, Key, TextureKey, StampSize, Tool } from '../constants';
 
 const FONT_FAMILY = 'arial';
 const FONT_SIZE = '20px';
 const TEXT_COLOR = '#000000';
-
-const BUTTON_BACKGROUND_COLOR = 0xd3d3d3;
 
 const STAMP_SCALE = 0.08;
 
@@ -17,14 +16,40 @@ const BRUSH_LINE_WIDTH = 3;
 
 const CENTER_X = 0.5;
 const CENTER_Y = 0.5;
+const LEFT_X = 0;
+const TOP_Y = 0;
 
 const TOOLBAR_WIDTH = 160;
 
-const OPTION_WIDHT = 50;
+const LARGE_OPTION_WIDTH = 105;
+const OPTION_WIDTH = 50;
 const OPTION_HEIGHT = 50;
+const OPTION_OFFSET = 55;
+const OPTION_BACKGROUND_COLOR = Color.GRAY;
 
 const SELECTED_OPTION_LINE_WIDTH = 3;
-const SELECTED_OPTION_LINE_COLOR = 0x000000;
+const SELECTED_OPTION_LINE_COLOR = Color.BLACK;
+
+const DEFAULT_BRUSH_COLOR = Color.RED;
+const DEFAULT_BRUSH = 'circle';
+const DEFAULT_STAMP = TextureKey.CANDY_CANE;
+const DEFAULT_STAMP_SIZE = StampSize.NORMAL;
+
+const STAGE_LINE_WIDTH = 4;
+const STAGE_LINE_COLOR = Color.BLACK;
+
+const SQUARE_ICON_WIDTH = 25;
+const SQUARE_ICON_HEIGHT = 25;
+const CIRCLE_ICON_RADIUS = 15;
+const STAR_ICON_POINTS = 5;
+const STAR_ICON_INNER_RADIUS = 9;
+const STAR_ICON_OUTER_RADIUS = 18;
+const IMAGE_ICON_SCALE = 0.07;
+const ICON_LINE_WIDTH = 3;
+
+const EXPORT_IMAGE_WIDTH = 695;
+const EXPORT_IMAGE_HEIGHT = 650;
+const EXPORT_IMAGE_NAME = 'gingerbread-house.png';
 
 export default class GameScene extends Phaser.Scene {
 	constructor() {
@@ -32,322 +57,317 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	preload() {
-		// get random gingerbread house to load.
-		let houseNumber = Math.floor(Math.random() * 6) + 1;
-
-		console.log(houseNumber);
-
-		const previousHouseNumber = localStorage.getItem('houseNumber');
-
-		console.log(previousHouseNumber);
-
-		while(houseNumber === parseInt(previousHouseNumber, 10)) {
-			houseNumber = Math.floor(Math.random() * 6) + 1;
-			console.log(houseNumber);
-		}
-		localStorage.setItem('houseNumber', houseNumber);
-
-		this.load.image('house', `assets/img/house${houseNumber}.png`);
-		this.load.image('eraser-icon', 'assets/img/eraser.png');
-		this.load.image('stamp-icon', 'assets/img/stamp.png');
-		this.load.image('candy-cane', 'assets/img/candy-cane.png');
-		this.load.image('gummy-bear', 'assets/img/gummy-bear.png');
-		this.load.image('sweets', 'assets/img/sweets.png');
-		this.load.image('mint', 'assets/img/mint.png');
-		this.load.image('candy', 'assets/img/candy.png');
-		this.load.image('chocolate', 'assets/img/chocolate.png');
-		this.load.image('peppermint', 'assets/img/peppermint.png');
-		this.load.image('candy2', 'assets/img/candy2.png');
-		this.load.image('gum', 'assets/img/gum.png');
-		this.load.image('truffle', 'assets/img/truffle.png');
-		this.load.image('jelly-beans', 'assets/img/jelly-beans.png');
-		this.load.image('sprinkles', 'assets/img/sprinkles.png');
-		this.load.image('lollipop', 'assets/img/lollipop.png');
-		this.load.image('gingerbread-man', 'assets/img/gingerbread-man.png');
+		this.load.image(TextureKey.HOUSE, this.getHouseImage());
+		this.load.image(TextureKey.ERASER_ICON, 'assets/img/eraser.png');
+		this.load.image(TextureKey.STAMP_ICON, 'assets/img/stamp.png');
+		this.load.image(TextureKey.CANDY_CANE, 'assets/img/candy-cane.png');
+		this.load.image(TextureKey.GUMMY_BEAR, 'assets/img/gummy-bear.png');
+		this.load.image(TextureKey.SWEETS, 'assets/img/sweets.png');
+		this.load.image(TextureKey.MINT, 'assets/img/mint.png');
+		this.load.image(TextureKey.CANDY, 'assets/img/candy.png');
+		this.load.image(TextureKey.CHOCOLATE, 'assets/img/chocolate.png');
+		this.load.image(TextureKey.PEPPERMINT, 'assets/img/peppermint.png');
+		this.load.image(TextureKey.CANDY_2, 'assets/img/candy2.png');
+		this.load.image(TextureKey.GUM, 'assets/img/gum.png');
+		this.load.image(TextureKey.TRUFFLE, 'assets/img/truffle.png');
+		this.load.image(TextureKey.JELLY_BEANS, 'assets/img/jelly-beans.png');
+		this.load.image(TextureKey.SPRINKLES, 'assets/img/sprinkles.png');
+		this.load.image(TextureKey.LOLLIPOP, 'assets/img/lollipop.png');
+		this.load.image(TextureKey.GINGERBREAD_MAN, 'assets/img/gingerbread-man.png');
 	}
 
 	create() {
-		this.brushColor = 0xff0000;
-		this.brush = 'circle';
-		this.stamp = 'candy-cane';
-		this.stampSizeMultiplier = 1;
+		this.brushColor = DEFAULT_BRUSH_COLOR;
+		this.brush = DEFAULT_BRUSH;
+		this.stampTextureKey = DEFAULT_STAMP;
+		this.stampSize = DEFAULT_STAMP_SIZE;
 		this.drawnShapes = [];
-		this.stage = this.createStage();
-		this.createStageImage();
-		this.createColorToolbar();
-		this.createStampToolbar();
-		this.createStampSizeToolbar();
-		this.createToolToolbar();
-		this.createButtons();
+		this.stage = this.addStage();
+		this.addStageImage();
+		this.addColorToolbar();
+		this.addStampToolbar();
+		this.addStampSizeToolbar();
+		this.addToolToolbar();
+		this.addButtons();
 	}
 
-	createStage() {
+	getHouseImage() {
+		return `assets/img/house${this.getHouseNumber()}.png`;
+	}
+
+	getHouseNumber() {
+		let houseNumber = this.getRandomHouseNumber();
+		const previousHouseNumber = localStorage.getItem(Key.HOUSE_NUMBER);
+		while (houseNumber === parseInt(previousHouseNumber, 10)) {
+			houseNumber = this.getRandomHouseNumber();
+		}
+		localStorage.setItem(Key.HOUSE_NUMBER, houseNumber);
+		return houseNumber;
+	}
+
+	getRandomHouseNumber() {
+		return Math.floor(Math.random() * 6) + 1;
+	}
+
+	addStage() {
 		const { width, height } = this.sys.game.canvas;
-		const stage = this.add.rectangle(160, 45, width - TOOLBAR_WIDTH * 2, height - 90);
-		stage.setOrigin(0, 0);
-		stage.setStrokeStyle(4, 0x000000);
-		return stage;
+		return this.add
+			.rectangle(160, 45, width - TOOLBAR_WIDTH * 2, height - 90)
+			.setOrigin(LEFT_X, TOP_Y)
+			.setStrokeStyle(STAGE_LINE_WIDTH, STAGE_LINE_COLOR);
 	}
 
-	createStageImage(stage) {
-		this.add.image(this.stage.x + this.stage.width / 2, this.stage.y + this.stage.height / 2, 'house');
+	addStageImage() {
+		this.add.image(this.stage.x + this.stage.width / 2, this.stage.y + this.stage.height / 2, TextureKey.HOUSE);
 	}
 
-	createColorToolbar() {
-		const width = 50;
-		const height = 50;
-		const x = 50;
-		const y = 350;
-		const offset = 55;
-		const colors = [0xff0000, 0xff7878, 0x146b3a, 0x74d680, 0x8cd4ff, 0xc6efff, 0xfac711, 0xeef6f2];
-
-		this.add.text(50, 300, 'Colors', {
+	addText(x, y, text) {
+		this.add.text(x, y, text, {
 			fontFamily: FONT_FAMILY,
 			fontSize: FONT_SIZE,
 			color: TEXT_COLOR
 		});
+	}
+
+	getOptionX(x, i) {
+		return i % 2 === 0 ? x : x + OPTION_OFFSET;
+	}
+
+	getOptionY(y, rows) {
+		return OPTION_OFFSET * rows + y;
+	}
+
+	addColorToolbar() {
+		const x = 50;
+		const y = 350;
+		const colors = [Color.RED, Color.PINK, Color.GREEN, Color.PALE_GREEN, Color.BLUE, Color.PALE_BLUE, Color.YELLOW, Color.OFF_WHITE];
+
+		this.addText(50, 300, 'Colors');
+
 		for (let i = 0, rows = 0, len = colors.length; i < len; i++) {
 			if (i > 0 && i % 2 === 0) {
 				rows++;
 			}
-			const colorRectangle = this.add.rectangle(i % 2 === 0 ? x : x + offset, offset * rows + y, width, height, colors[i]);
-			colorRectangle.setInteractive();
-			colorRectangle.on('pointerdown', () => {
-				if (this.selectedColorRectangle) {
-					this.selectedColorRectangle.destroy();
-				}
-				this.selectedColorRectangle = this.add.rectangle(colorRectangle.x, colorRectangle.y, OPTION_WIDHT, OPTION_HEIGHT);
-				this.selectedColorRectangle.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
-				this.brushColor = colors[i];
-			});
-			if (this.brushColor === colors[i]) {
-				this.selectedColorRectangle = this.add.rectangle(colorRectangle.x, colorRectangle.y, OPTION_WIDHT, OPTION_HEIGHT);
-				this.selectedColorRectangle.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
-			}
+			this.addColorOption(this.getOptionX(x, i), this.getOptionY(y, rows), colors[i]);
 		}
 	}
 
-	createStampToolbar() {
-		const width = 50;
-		const height = 50;
+	addColorOption(x, y, color) {
+		const option = this.add.rectangle(x, y, OPTION_WIDTH, OPTION_HEIGHT, color);
+		option.setInteractive();
+		option.on('pointerdown', () => {
+			if (this.selectedColorOption) {
+				this.selectedColorOption.destroy();
+			}
+			this.selectedColorOption = this.add.rectangle(option.x, option.y, OPTION_WIDTH, OPTION_HEIGHT);
+			this.selectedColorOption.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
+			this.brushColor = color;
+		});
+		if (this.brushColor === color) {
+			this.selectedColorOption = this.add.rectangle(option.x, option.y, OPTION_WIDTH, OPTION_HEIGHT);
+			this.selectedColorOption.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
+		}
+	}
+
+	addStampToolbar() {
 		const x = 919;
 		const y = 90;
-		const offset = 55;
-		const stamps = [
-			'candy-cane',
-			'gummy-bear',
-			'sweets',
-			'mint',
-			'candy',
-			'chocolate',
-			'peppermint',
-			'candy2',
-			'gum',
-			'truffle',
-			'jelly-beans',
-			'sprinkles',
-			'lollipop',
-			'gingerbread-man'
+		const stampTextureKeys = [
+			TextureKey.CANDY_CANE,
+			TextureKey.GUMMY_BEAR,
+			TextureKey.SWEETS,
+			TextureKey.MINT,
+			TextureKey.CANDY,
+			TextureKey.CHOCOLATE,
+			TextureKey.PEPPERMINT,
+			TextureKey.CANDY_2,
+			TextureKey.GUM,
+			TextureKey.TRUFFLE,
+			TextureKey.JELLY_BEANS,
+			TextureKey.SPRINKLES,
+			TextureKey.LOLLIPOP,
+			TextureKey.GINGERBREAD_MAN
 		];
+		this.addText(914, 40, 'Stamps');
 
-		this.add.text(914, 40, 'Stamps', {
-			fontFamily: FONT_FAMILY,
-			fontSize: FONT_SIZE,
-			color: TEXT_COLOR
-		});
-
-		for (let i = 0, rows = 0, len = stamps.length; i < len; i++) {
+		for (let i = 0, rows = 0, len = stampTextureKeys.length; i < len; i++) {
 			if (i > 0 && i % 2 === 0) {
 				rows++;
 			}
-			const stampRectangle = this.add.rectangle(
-				i % 2 === 0 ? x : x + offset,
-				offset * rows + y,
-				width,
-				height,
-				BUTTON_BACKGROUND_COLOR
-			);
-
-			const stampImage = this.add.image(stampRectangle.x, stampRectangle.y, stamps[i]);
-			stampImage.setScale(STAMP_SCALE);
-
-			stampRectangle.setInteractive();
-			stampRectangle.on('pointerdown', () => {
-				if (this.selectedStampRectangle) {
-					this.selectedStampRectangle.destroy();
-				}
-				this.selectedStampRectangle = this.add.rectangle(stampRectangle.x, stampRectangle.y, 50, 50);
-				this.selectedStampRectangle.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
-				this.stamp = stamps[i];
-			});
-			if (this.stamp === stamps[i]) {
-				this.selectedStampRectangle = this.add.rectangle(stampRectangle.x, stampRectangle.y, 50, 50);
-				this.selectedStampRectangle.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
-			}
+			this.addStampOption(this.getOptionX(x, i), this.getOptionY(y, rows), stampTextureKeys[i]);
 		}
 	}
 
-	createStampSizeToolbar() {
-		this.add.text(890, 485, 'Stamp sizes', {
-			fontFamily: FONT_FAMILY,
-			fontSize: FONT_SIZE,
-			color: TEXT_COLOR
+	addStampOption(x, y, stampTextureKey) {
+		const option = this.add.rectangle(x, y, OPTION_WIDTH, OPTION_HEIGHT, OPTION_BACKGROUND_COLOR);
+		option.setInteractive();
+		option.on('pointerdown', () => {
+			if (this.selectedStampOption) {
+				this.selectedStampOption.destroy();
+			}
+			this.selectedStampOption = this.add.rectangle(option.x, option.y, OPTION_WIDTH, OPTION_HEIGHT);
+			this.selectedStampOption.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
+			this.stampTextureKey = stampTextureKey;
 		});
-
-		this.createStampSizeOption(945, 535, 'Small', 920, 525, 0.5);
-		this.createStampSizeOption(945, 590, 'Normal', 913, 580, 1);
-		this.createStampSizeOption(945, 645, 'Large', 920, 635, 2);
-		this.createStampSizeOption(945, 700, 'X-Large', 910, 687, 3);
+		if (this.stampTextureKey === stampTextureKey) {
+			this.selectedStampOption = this.add.rectangle(option.x, option.y, OPTION_WIDTH, OPTION_HEIGHT);
+			this.selectedStampOption.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
+		}
+		this.add.image(option.x, option.y, stampTextureKey).setScale(STAMP_SCALE);
 	}
 
-	createStampSizeOption(x, y, text, textX, textY, multiplier) {
-		const rectangle = this.add.rectangle(x, y, 105, 50, BUTTON_BACKGROUND_COLOR);
+	addStampSizeToolbar() {
+		this.addText(890, 485, 'Stamp sizes');
+		this.addStampSizeOption(945, 535, 'Small', 920, 525, StampSize.SMALL);
+		this.addStampSizeOption(945, 590, 'Normal', 913, 580, StampSize.NORMAL);
+		this.addStampSizeOption(945, 645, 'Large', 920, 635, StampSize.LARGE);
+		this.addStampSizeOption(945, 700, 'X-Large', 910, 687, StampSize.EXTRA_LARGE);
+	}
 
-		this.add.text(textX, textY, text, {
-			fontFamily: FONT_FAMILY,
-			fontSize: FONT_SIZE,
-			color: TEXT_COLOR
-		});
-		rectangle.setInteractive();
-		rectangle.on('pointerdown', () => {
+	addStampSizeOption(x, y, text, textX, textY, multiplier) {
+		const option = this.add.rectangle(x, y, LARGE_OPTION_WIDTH, OPTION_HEIGHT, OPTION_BACKGROUND_COLOR);
+		option.setInteractive();
+		option.on('pointerdown', () => {
 			if (this.selectedStampSizeRectangle) {
 				this.selectedStampSizeRectangle.destroy();
 			}
-			this.selectedStampSizeRectangle = this.add.rectangle(rectangle.x, rectangle.y, 105, 50);
+			this.selectedStampSizeRectangle = this.add.rectangle(option.x, option.y, LARGE_OPTION_WIDTH, OPTION_HEIGHT);
 			this.selectedStampSizeRectangle.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
-			this.stampSizeMultiplier = multiplier;
+			this.stampSize = multiplier;
 		});
-		if (this.stampSizeMultiplier === multiplier) {
-			this.selectedStampSizeRectangle = this.add.rectangle(rectangle.x, rectangle.y, 105, 50);
+		if (this.stampSize === multiplier) {
+			this.selectedStampSizeRectangle = this.add.rectangle(option.x, option.y, LARGE_OPTION_WIDTH, OPTION_HEIGHT);
 			this.selectedStampSizeRectangle.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
+		}
+		this.addText(textX, textY, text);
+	}
+
+	addToolToolbar() {
+		this.addText(50, 40, 'Tools');
+		const x = 50;
+		const y = 90;
+		const tools = [
+			Tool.CIRCLE,
+			Tool.STROKE_CIRCLE,
+			Tool.SQUARE,
+			Tool.STROKE_SQUARE,
+			Tool.STAR,
+			Tool.STROKE_STAR,
+			Tool.ERASER,
+			Tool.STAMP
+		];
+		for (let i = 0, len = tools.length, rows = 0; i < len; i++) {
+			if (i > 0 && i % 2 === 0) {
+				rows++;
+			}
+			this.addToolOption(this.getOptionX(x, i), this.getOptionY(y, rows), tools[i]);
 		}
 	}
 
-	createToolToolbar() {
-		this.add.text(50, 40, 'Tools', {
-			fontFamily: FONT_FAMILY,
-			fontSize: FONT_SIZE,
-			color: TEXT_COLOR
-		});
-		this.createToolOption('circle', 50, 90, 50, 50);
-		this.createToolOption('stroke-circle', 105, 90, 50, 50);
-		this.createToolOption('square', 50, 145, 50, 50);
-		this.createToolOption('stroke-square', 105, 145, 50, 50);
-		this.createToolOption('star', 50, 200, 50, 50);
-		this.createToolOption('stroke-star', 105, 200, 50, 50);
-		this.createToolOption('eraser', 50, 255, 50, 50);
-		this.createToolOption('stamp', 105, 255, 50, 50);
-	}
-
-	createToolOption(brush, x, y, width, height) {
-		const brushRectangle = this.add.rectangle(x, y, width, height, BUTTON_BACKGROUND_COLOR);
-		this.createToolIcon(brush, x, y);
-		brushRectangle.setInteractive();
-		brushRectangle.on('pointerdown', () => {
+	addToolOption(x, y, brush) {
+		const option = this.add.rectangle(x, y, OPTION_WIDTH, OPTION_HEIGHT, OPTION_BACKGROUND_COLOR);
+		option.setInteractive();
+		option.on('pointerdown', () => {
 			if (this.selectedBrushRectangle) {
 				this.selectedBrushRectangle.destroy();
 			}
-			this.selectedBrushRectangle = this.add.rectangle(brushRectangle.x, brushRectangle.y, 50, 50);
+			this.selectedBrushRectangle = this.add.rectangle(option.x, option.y, OPTION_WIDTH, OPTION_HEIGHT);
 			this.selectedBrushRectangle.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
 			this.brush = brush;
 		});
 		if (this.brush === brush) {
-			this.selectedBrushRectangle = this.add.rectangle(brushRectangle.x, brushRectangle.y, 50, 50);
+			this.selectedBrushRectangle = this.add.rectangle(option.x, option.y, OPTION_WIDTH, OPTION_HEIGHT);
 			this.selectedBrushRectangle.setStrokeStyle(SELECTED_OPTION_LINE_WIDTH, SELECTED_OPTION_LINE_COLOR);
 		}
+		this.addToolIcon(brush, x, y);
 	}
 
-	createToolIcon(brush, x, y) {
-		let icon = null;
+	addToolIcon(brush, x, y) {
 		switch (brush) {
-			case 'square':
-				icon = this.add.rectangle(x, y, 25, 25, 0x000000);
-				icon.setStrokeStyle(3, 0x000000);
+			case Tool.SQUARE:
+				this.addSquareIcon(x, y, false);
 				break;
-			case 'stroke-square':
-				icon = this.add.rectangle(x, y, 25, 25, 0xffffff);
-				icon.setStrokeStyle(3, 0x000000);
+			case Tool.STROKE_SQUARE:
+				this.addSquareIcon(x, y, true);
 				break;
-			case 'circle':
-				icon = this.add.circle(x, y, 15, 0x000000);
-				icon.setStrokeStyle(3, 0x000000);
+			case Tool.CIRCLE:
+				this.addCircleIcon(x, y, false);
 				break;
-			case 'stroke-circle':
-				icon = this.add.circle(x, y, 15, 0xffffff);
-				icon.setStrokeStyle(3, 0x000000);
+			case Tool.STROKE_CIRCLE:
+				this.addCircleIcon(x, y, true);
 				break;
-			case 'star':
-				icon = this.add.star(x, y, 5, 9, 18, 0x000000);
-				icon.setStrokeStyle(3, 0x000000);
+			case Tool.STAR:
+				this.addStarIcon(x, y, false);
 				break;
-			case 'stroke-star':
-				icon = this.add.star(x, y, 5, 9, 18, 0xffffff);
-				icon.setStrokeStyle(3, 0x000000);
+			case Tool.STROKE_STAR:
+				this.addStarIcon(x, y, true);
 				break;
-			case 'eraser':
-				icon = this.add.image(x, y, 'eraser-icon');
-				icon.setScale(0.07, 0.07);
+			case Tool.ERASER:
+				this.addImageIcon(x, y, TextureKey.ERASER_ICON);
 				break;
-			case 'stamp':
-				icon = this.add.image(x, y, 'stamp-icon');
-				icon.setScale(0.07, 0.07);
+			case Tool.STAMP:
+				this.addImageIcon(x, y, TextureKey.STAMP_ICON);
 				break;
 		}
 	}
 
-	createButtons() {
+	addSquareIcon(x, y, isStroke) {
+		const icon = this.add.rectangle(x, y, SQUARE_ICON_WIDTH, SQUARE_ICON_HEIGHT, isStroke ? Color.WHITE : Color.BLACK);
+		icon.setStrokeStyle(ICON_LINE_WIDTH, Color.BLACK);
+	}
 
-		const changeHouse = this.add.rectangle(80, this.stage.y + this.stage.height - 135, 105, 50, BUTTON_BACKGROUND_COLOR);
+	addCircleIcon(x, y, isStroke) {
+		const icon = this.add.circle(x, y, CIRCLE_ICON_RADIUS, isStroke ? Color.WHITE : Color.BLACK);
+		icon.setStrokeStyle(ICON_LINE_WIDTH, Color.BLACK);
+	}
 
-		this.add.text(60, this.stage.y + this.stage.height - 145, 'New', {
-			fontFamily: FONT_FAMILY,
-			fontSize: FONT_SIZE,
-			color: TEXT_COLOR
-		});
+	addStarIcon(x, y, isStroke) {
+		const icon = this.add.star(
+			x,
+			y,
+			STAR_ICON_POINTS,
+			STAR_ICON_INNER_RADIUS,
+			STAR_ICON_OUTER_RADIUS,
+			isStroke ? Color.WHITE : Color.BLACK
+		);
+		icon.setStrokeStyle(ICON_LINE_WIDTH, Color.BLACK);
+	}
 
-		changeHouse.setInteractive();
-		changeHouse.on('pointerdown', () => {
+	addImageIcon(x, y, imageName) {
+		const icon = this.add.image(x, y, imageName);
+		icon.setScale(IMAGE_ICON_SCALE);
+	}
+
+	addButtons() {
+		this.addButton(80, 588, 'New', 60, 578, () => {
 			location.reload();
-		})
-
-		const clearAllButton = this.add.rectangle(80, this.stage.y + this.stage.height - 80, 105, 50, BUTTON_BACKGROUND_COLOR);
-
-		this.add.text(42, this.stage.y + this.stage.height - 90, 'Clear All', {
-			fontFamily: FONT_FAMILY,
-			fontSize: FONT_SIZE,
-			color: TEXT_COLOR
 		});
-
-		clearAllButton.setInteractive();
-		clearAllButton.on('pointerdown', () => {
+		this.addButton(80, 643, 'Clear All', 42, 633, () => {
 			this.clearAll();
 		});
-
-		const exportButton = this.add.rectangle(80, this.stage.y + this.stage.height - 25, 105, 50, BUTTON_BACKGROUND_COLOR);
-
-		this.add.text(50, this.stage.y + this.stage.height - 35, 'Export', {
-			fontFamily: FONT_FAMILY,
-			fontSize: FONT_SIZE,
-			color: TEXT_COLOR
-		});
-
-		exportButton.setInteractive();
-		exportButton.on('pointerdown', () => {
-			let canvas = document.querySelector('canvas');
+		this.addButton(80, 698, 'Export', 50, 688, () => {
+			const canvas = document.querySelector('canvas');
 			const saveCanvas = document.createElement('canvas');
-			saveCanvas.width = 700;
-			saveCanvas.height = 650;
+			saveCanvas.width = EXPORT_IMAGE_WIDTH;
+			saveCanvas.height = EXPORT_IMAGE_HEIGHT;
 
 			const ctx = saveCanvas.getContext('2d');
-			ctx.drawImage(canvas, 165, 50, 695, 650, 0, 0, 695, 650);
+			ctx.drawImage(canvas, 160, 50, EXPORT_IMAGE_WIDTH, EXPORT_IMAGE_HEIGHT, 0, 0, EXPORT_IMAGE_WIDTH, EXPORT_IMAGE_HEIGHT);
 
 			let dataURL = saveCanvas.toDataURL('image/png');
 
 			let downloadHelper = document.createElement('a');
-			downloadHelper.setAttribute('download', 'download.png');
+			downloadHelper.setAttribute('download', EXPORT_IMAGE_NAME);
 			downloadHelper.setAttribute('href', dataURL);
 			downloadHelper.click();
 		});
+	}
+
+	addButton(x, y, text, textX, textY, callback) {
+		const button = this.add.rectangle(x, y, LARGE_OPTION_WIDTH, OPTION_HEIGHT, OPTION_BACKGROUND_COLOR);
+		this.addText(textX, textY, text);
+		button.setInteractive();
+		button.on('pointerdown', callback);
 	}
 
 	clearAll() {
@@ -357,74 +377,123 @@ export default class GameScene extends Phaser.Scene {
 		this.drawnShapes = [];
 	}
 
-	canDraw(pointer) {
-		return pointer.isDown && this.stage.getBounds().contains(pointer.x - SQUARE_BRUSH_SIZE / 2, pointer.y - SQUARE_BRUSH_SIZE);
-	}
-
 	update() {
 		const pointer = this.input.activePointer;
 		let shape = null;
-		if (this.canDraw(pointer)) {
+		if (pointer.isDown) {
 			switch (this.brush) {
-				case 'square':
-					shape = this.add.rectangle(pointer.x, pointer.y, SQUARE_BRUSH_SIZE, SQUARE_BRUSH_SIZE, this.brushColor);
-					shape.setOrigin(CENTER_X, CENTER_Y);
+				case Tool.SQUARE:
+					shape = this.drawSquare(pointer.x, pointer.y, this.brushColor, false);
 					break;
-				case 'stroke-square':
-					shape = this.add.rectangle(pointer.x, pointer.y, SQUARE_BRUSH_SIZE, SQUARE_BRUSH_SIZE);
-					shape.setOrigin(CENTER_X, CENTER_Y);
-					shape.setStrokeStyle(BRUSH_LINE_WIDTH, this.brushColor);
+				case Tool.STROKE_SQUARE:
+					shape = this.drawSquare(pointer.x, pointer.y, this.brushColor, true);
 					break;
-				case 'circle':
-					shape = this.add.circle(pointer.x, pointer.y, CIRCLE_BRUSH_RADIUS, this.brushColor);
-					shape.setOrigin(CENTER_X, CENTER_Y);
+				case Tool.CIRCLE:
+					shape = this.drawCircle(pointer.x, pointer.y, this.brushColor, false);
 					break;
-				case 'stroke-circle':
-					shape = this.add.circle(pointer.x, pointer.y, CIRCLE_BRUSH_RADIUS);
-					shape.setOrigin(CENTER_X, CENTER_Y);
-					shape.setStrokeStyle(BRUSH_LINE_WIDTH, this.brushColor);
+				case Tool.STROKE_CIRCLE:
+					shape = this.drawCircle(pointer.x, pointer.y, this.brushColor, true);
 					break;
-				case 'star':
-					shape = this.add.star(
-						pointer.x,
-						pointer.y,
-						STAR_BRUSH_NUMBER_OF_POINTS,
-						STAR_BRUSH_INNER_RADIUS,
-						STAR_BRUSH_OUTER_RADIUS,
-						this.brushColor
-					);
-					shape.setOrigin(CENTER_X, CENTER_Y);
+				case Tool.STAR:
+					shape = this.drawStar(pointer.x, pointer.y, this.brushColor, false);
 					break;
-				case 'stroke-star':
-					shape = this.add.star(
-						pointer.x,
-						pointer.y,
-						STAR_BRUSH_NUMBER_OF_POINTS,
-						STAR_BRUSH_INNER_RADIUS,
-						STAR_BRUSH_OUTER_RADIUS
-					);
-					shape.setOrigin(CENTER_X, CENTER_Y);
-					shape.setStrokeStyle(BRUSH_LINE_WIDTH, this.brushColor);
+				case Tool.STROKE_STAR:
+					shape = this.drawStar(pointer.x, pointer.y, this.brushColor, true);
 					break;
-				case 'stamp':
-					if (this.stamp) {
-						shape = this.add.image(pointer.x, pointer.y, this.stamp);
-						shape.setOrigin(CENTER_X, CENTER_Y);
-						shape.setScale(STAMP_SCALE * this.stampSizeMultiplier);
-					}
+				case Tool.STAMP:
+					shape = this.drawStamp(pointer.x, pointer.y, this.stampTextureKey, this.stampSize);
 					break;
-				case 'eraser':
-					for (let i = 0, len = this.drawnShapes.length; i < len; i++) {
-						if (this.drawnShapes[i].getBounds().contains(pointer.x, pointer.y)) {
-							this.drawnShapes[i].destroy();
-						}
-					}
+				case Tool.ERASER:
+					this.erase(pointer.x, pointer.y, this.drawnShapes);
 					break;
 			}
 		}
-
 		if (shape) {
 			this.drawnShapes.push(shape);
 		}
+	}
+
+	canDrawSquare(x, y, width, height) {
+		if (
+			this.stage.x < x - width / 2 &&
+			this.stage.width + this.stage.x > x + width / 2 &&
+			this.stage.y < y - height / 2 &&
+			this.stage.height + this.stage.y > y + height / 2
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	canDrawCircle(x, y, radius) {
+		if (
+			this.stage.x < x - radius &&
+			this.stage.width + this.stage.x > x + radius &&
+			this.stage.y < y - radius &&
+			this.stage.height + this.stage.y > y + radius
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	drawSquare(x, y, color, isStroke) {
+		let square = null;
+		if (isStroke && this.canDrawSquare(x, y, SQUARE_BRUSH_SIZE, SQUARE_BRUSH_SIZE)) {
+			square = this.add.rectangle(x, y, SQUARE_BRUSH_SIZE, SQUARE_BRUSH_SIZE);
+			square.setStrokeStyle(BRUSH_LINE_WIDTH, color);
+			square.setOrigin(CENTER_X, CENTER_Y);
+		} else if (this.canDrawSquare(x, y, SQUARE_BRUSH_SIZE, SQUARE_BRUSH_SIZE)) {
+			square = this.add.rectangle(x, y, SQUARE_BRUSH_SIZE, SQUARE_BRUSH_SIZE, color);
+			square.setOrigin(CENTER_X, CENTER_Y);
+		}
+		return square;
+	}
+
+	drawCircle(x, y, color, isStroke) {
+		let circle = null;
+		if (isStroke && this.canDrawCircle(x, y, CIRCLE_BRUSH_RADIUS)) {
+			circle = this.add.circle(x, y, CIRCLE_BRUSH_RADIUS);
+			circle.setStrokeStyle(BRUSH_LINE_WIDTH, color);
+			circle.setOrigin(CENTER_X, CENTER_Y);
+		} else if (this.canDrawCircle(x, y, CIRCLE_BRUSH_RADIUS)) {
+			circle = this.add.circle(x, y, CIRCLE_BRUSH_RADIUS, color);
+			circle.setOrigin(CENTER_X, CENTER_Y);
+		}
+		return circle;
+	}
+
+	drawStar(x, y, color, isStroke) {
+		let star = null;
+		if (isStroke && this.canDrawCircle(x, y, STAR_BRUSH_OUTER_RADIUS)) {
+			star = this.add.star(x, y, STAR_BRUSH_NUMBER_OF_POINTS, STAR_BRUSH_INNER_RADIUS, STAR_BRUSH_OUTER_RADIUS);
+			star.setStrokeStyle(BRUSH_LINE_WIDTH, color);
+			star.setOrigin(CENTER_X, CENTER_Y);
+		} else if (this.canDrawCircle(x, y, STAR_BRUSH_OUTER_RADIUS)) {
+			star = this.add.star(x, y, STAR_BRUSH_NUMBER_OF_POINTS, STAR_BRUSH_INNER_RADIUS, STAR_BRUSH_OUTER_RADIUS, color);
+			star.setOrigin(CENTER_X, CENTER_Y);
+		}
+		return star;
+	}
+
+	drawStamp(x, y, imageKey, imageSize) {
+		const stampImage = this.textures.get(imageKey).getSourceImage();
+		let image = null;
+		const stampWidth = stampImage?.width * STAMP_SCALE * imageSize;
+		const stampHeight = stampImage?.height * STAMP_SCALE * imageSize;
+		if (stampImage && this.canDrawSquare(x, y, stampWidth, stampHeight)) {
+			image = this.add.image(x, y, imageKey);
+			image.setOrigin(CENTER_X, CENTER_Y);
+			image.setScale(STAMP_SCALE * imageSize);
+		}
+		return image;
+	}
+
+	erase(x, y, shapes) {
+		shapes.filter((shape) => {
+			return shape.getBounds().contains(x, y);
+		}).forEach((shape) => {
+			shape.destroy();
+		});
 	}
 }
